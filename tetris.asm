@@ -114,8 +114,7 @@ set_pixel:
     rol t0, t0, a1 ; Create a mask for the byte
 
     ; Calculate a shit of n bytes which will be applied to the mask
-    addi t3, zero, 3
-    and t3, t3, a0 ; get last two significants bits of x
+    andi t3, a0, 3 ; get last two significants bits of x
     addi t2, zero, 8; Calculate shift of bytes
     mul t2, t2, t3
 
@@ -123,8 +122,7 @@ set_pixel:
 
     ; Get third and forth bit of x
     add t4, a0, zero
-    srli t4, t4, 2
-    slli t4, t4, 2
+    andi t4, t4, 0xFD
     
     ; Load leds, apply mask and
     ldw t1, LEDS(t4)
@@ -152,8 +150,27 @@ get_input:
     ret
 ; END:get_input
 
+; BEGIN:in_gsa
+in_gsa:
+    ;a0: pixel’s x-coordinate
+    ;a1: pixel’s y-coordinate
+
+    ret
+; END:in_gsa
+
+; BEGIN:get_gsa
+get_gsa:
+    ;a0: pixel’s x-coordinate
+    ;a1: pixel’s y-coordinate
+
+    ret
+; END:get_gsa
+
 ; BEGIN:set_gsa
 set_gsa:
+    ;a0: pixel’s x-coordinate
+    ;a1: pixel’s y-coordinate
+    ;a2: pixel’s value p
 
     ret
 ; END:set_gsa
@@ -163,12 +180,6 @@ move_gsa:
 
     ret
 ; END:move_gsa
-
-; BEGIN:in_gsa
-in_gsa:
-
-    ret
-; END:in_gsa
 
 ; BEGIN:display_score
 display_score:

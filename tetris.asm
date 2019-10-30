@@ -68,6 +68,24 @@ main:
     addi a0, zero, 1
     addi a1, zero, 1
     call set_pixel
+    
+    addi a0, zero, 0
+    addi a1, zero, 0
+    call set_pixel
+
+    addi a0, zero, 6
+    addi a1, zero, 7
+    call set_pixel
+
+    addi a0, zero, 9
+    addi a1, zero, 3
+    call set_pixel
+
+    addi a0, zero, 11
+    addi a1, zero, 7
+    call set_pixel
+
+    call end
 
 ; END:main
 
@@ -95,9 +113,23 @@ set_pixel:
     addi t0, zero, 1
     rol t0, t0, a1 ; Create a mask for the byte
 
-    ldw t1, LEDS(a0)
+    ; Calculate a shit of n bytes which will be applied to the mask
+    addi t3, zero, 3
+    and t3, t3, a0 ; get last two significants bits of x
+    addi t2, zero, 8; Calculate shift of bytes
+    mul t2, t2, t3
+
+    rol t0, t0, t2
+
+    ; Get third and forth bit of x
+    add t4, a0, zero
+    srli t4, t4, 2
+    slli t4, t4, 2
+    
+    ; Load leds, apply mask and
+    ldw t1, LEDS(t4)
     or t1, t1, t0
-    stw t1, LEDS(a0)
+    stw t1, LEDS(t4)
 
     ret
 ; END:set_pixel
@@ -203,3 +235,9 @@ generate_tetrominoe:
 
     ret
 ; END:generate_tetrominoe
+
+
+; BEGIN:end
+end:
+
+; END:end

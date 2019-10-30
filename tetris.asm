@@ -159,7 +159,10 @@ in_gsa:
 get_gsa:
     ;a0: pixel’s x-coordinate
     ;a1: pixel’s y-coordinate
-
+    ;96 word of 32 bits
+    slli t0, a0, 8
+    add t0, t0, a1
+    ldw v0, GSA(t0)
     ret
 ; END:get_gsa
 
@@ -168,7 +171,9 @@ set_gsa:
     ;a0: pixel’s x-coordinate
     ;a1: pixel’s y-coordinate
     ;a2: pixel’s value p
-
+    slli t0, a0, 8
+    add t0, t0, a1
+    stw a2, GSA(t0)
     ret
 ; END:set_gsa
 

@@ -63,12 +63,12 @@
 
 ; BEGIN:main
 main:
-    jal clear_leds
+    call clear_leds
 
-    addi $a0, $zero, 1
-    addi $a1, $zero, 1
-    jal set_pixel
-    
+    addi a0, zero, 1
+    addi a1, zero, 1
+    call set_pixel
+
 ; END:main
 
 ; BEGIN:clear_leds
@@ -80,9 +80,16 @@ clear_leds:
 
 ; BEGIN:set_pixel
 set_pixel:
-    ; Params
-    ; register a0: the pixel’s x-coordinate.
-    ; register a1: the pixel’s y-coordinate.
+    ; $a0: pixel’s x-coordinate.
+    ; $a1: pixel’s y-coordinate.
+
+    ; load y index into t1
+    addi t1, zero, 1
+    rol t1, t1, a1 ; Create a mask for the byte
+
+    ldb t2, LEDS(a0)
+    or t2, t2, t1
+    stb t2, LEDS(a0)
 
     ret
 ; END:set_pixel
@@ -93,7 +100,7 @@ wait:
     ; val Smaller for simulation
 
     ; TODO: A simple loop from  val to 0
-
+    
     ret
 ; END:wait
 

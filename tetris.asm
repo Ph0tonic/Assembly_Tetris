@@ -74,9 +74,15 @@ main:
 ; BEGIN:clear_leds
 clear_leds:
     ; set LED[x] to 0
-    stw zero, LEDS(0)
-    stw zero, LEDS(4)
-    stw zero, LEDS(8)
+    stw zero, LEDS(zero)
+    
+    ; store 4 in t0 register
+    addi t0, zero, 4
+    stw zero, LEDS(t0)
+    
+    ; store 8 in t0 register
+    addi t0, zero, 8
+    stw zero, LEDS(t0)
     ret
 ; END:clear_leds
 
@@ -89,9 +95,9 @@ set_pixel:
     addi t1, zero, 1
     rol t1, t1, a1 ; Create a mask for the byte
 
-    ldb t2, LEDS(a0)
+    ;ldb t2, LEDS(a0)
     or t2, t2, t1
-    stb t2, LEDS(a0)
+    ;stb t2, LEDS(a0)
 
     ret
 ; END:set_pixel

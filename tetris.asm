@@ -1,5 +1,3 @@
-; SIZE 12 x 8
-
 
 ;; game state memory location
 .equ T_X, 0x1000 ; falling tetromino position on x
@@ -142,20 +140,19 @@ wait:
     ret
 ; END:wait
 
-
-
-; BEGIN:get_input
-get_input:
-
-    ret
-; END:get_input
-
 ; BEGIN:in_gsa
 in_gsa:
     ;a0: pixel’s x-coordinate
     ;a1: pixel’s y-coordinate
-
+    ;Return Value
+    ;v0: 1 if out of GSA, 0 if in GSA
+    add v0, zero, zero
+    cmpgei v0, a0, X_LIMIT
+    cmpgei v0, a1, Y_LIMIT
+    cmplt v0, a0, zero
+    cmplt v0, a1, zero
     ret
+
 ; END:in_gsa
 
 ; BEGIN:get_gsa
@@ -174,6 +171,12 @@ set_gsa:
 
     ret
 ; END:set_gsa
+
+; BEGIN:get_input
+get_input:
+
+    ret
+; END:get_input
 
 ; BEGIN:move_gsa
 move_gsa:

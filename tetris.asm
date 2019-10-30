@@ -73,8 +73,10 @@ main:
 
 ; BEGIN:clear_leds
 clear_leds:
-    ; TODO: LEDS from 0 to 95 set to 0
-
+    ; set LED[x] to 0
+    stw zero, LEDS(0)
+    stw zero, LEDS(4)
+    stw zero, LEDS(8)
     ret
 ; END:clear_leds
 

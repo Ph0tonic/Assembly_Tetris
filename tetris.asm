@@ -63,25 +63,32 @@
 main:
     call clear_leds
 
+    addi a2, zero, PLACED
     addi a0, zero, 1
     addi a1, zero, 1
-    call set_pixel
+    ;call set_gsa
     
     addi a0, zero, 0
     addi a1, zero, 0
-    call set_pixel
+    ;call set_gsa
 
     addi a0, zero, 6
     addi a1, zero, 7
-    call set_pixel
+    ;call set_gsa
 
     addi a0, zero, 9
     addi a1, zero, 3
-    call set_pixel
+    ;call set_gsa
 
     addi a0, zero, 11
     addi a1, zero, 7
-    call set_pixel
+    call set_gsa
+
+    addi a0, zero, 11
+    addi a1, zero, 5
+    call set_gsa
+
+    call draw_gsa
 
     call end
 
@@ -160,9 +167,10 @@ get_gsa:
     ;a0: pixel’s x-coordinate
     ;a1: pixel’s y-coordinate
     ;96 word of 32 bits
-    slli t0, a0, 8
-    add t0, t0, a1
-    ldw v0, GSA(t0)
+    slli t7, a0, 3
+    add t7, t7, a1
+    slli t7,t7, 2
+    ldw v0, GSA(t7)
     ret
 ; END:get_gsa
 
@@ -171,11 +179,48 @@ set_gsa:
     ;a0: pixel’s x-coordinate
     ;a1: pixel’s y-coordinate
     ;a2: pixel’s value p
-    slli t0, a0, 8
-    add t0, t0, a1
-    stw a2, GSA(t0)
+    slli t7, a0, 3
+    add t7, t7, a1
+    slli t7,t7, 2
+    stw a2, GSA(t7)
     ret
 ; END:set_gsa
+
+; BEGIN:draw_gsa
+draw_gsa:
+    ; TODO: Comments for labels
+    
+    addi sp, sp, 4
+    stw ra, 0(sp)
+    
+    addi t5, zero, X_LIMIT
+    draw_gsa_outer_loop:
+    addi t5, t5, -1
+    
+    addi t6, zero, Y_LIMIT
+
+    draw_gsa_inner_loop:
+    addi t6, t6, -1
+    
+    add a0, t5, zero
+    add a1, t6, zero
+
+    call get_gsa
+
+    addi t2, zero, NOTHING
+    beq v0, t2, draw_gsa_inner_loop_end
+
+    call set_pixel
+
+    draw_gsa_inner_loop_end:
+    bne t5, zero, draw_gsa_inner_loop
+    bne t6, zero, draw_gsa_outer_loop
+    
+    ldw ra, 0(sp)
+    addi sp, sp, -4
+
+    ret
+; END:draw_gsa
 
 ; BEGIN:get_input
 get_input:
@@ -236,12 +281,6 @@ detect_collision:
 
     ret
 ; END:detect_collision
-
-; BEGIN:draw_gsa
-draw_gsa:
-    
-    ret
-; END:draw_gsa
 
 ; BEGIN:draw_tetromino
 draw_tetromino:

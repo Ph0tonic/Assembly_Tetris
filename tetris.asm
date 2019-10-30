@@ -92,12 +92,12 @@ set_pixel:
     ; $a1: pixel’s y-coordinate.
 
     ; load y index into t1
-    addi t1, zero, 1
-    rol t1, t1, a1 ; Create a mask for the byte
+    addi t0, zero, 1
+    rol t0, t0, a1 ; Create a mask for the byte
 
-    ;ldb t2, LEDS(a0)
-    or t2, t2, t1
-    ;stb t2, LEDS(a0)
+    ldw t1, LEDS(a0)
+    or t1, t1, t0
+    stw t1, LEDS(a0)
 
     ret
 ; END:set_pixel

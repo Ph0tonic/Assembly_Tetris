@@ -52,56 +52,104 @@
 ;; game rate of tetrominoes falling down (in terms of game loop iteration)
 .equ RATE, 5
 
-; BEGIN:procedure_name
+; BEGIN:clear_leds
 clear_leds:
 
     ret
-; END:procedure_name
+; END:clear_leds
 
-
+; BEGIN:set_pixel
 set_pixel:
 
+    ret
+; END:set_pixel
 
+; BEGIN:get_input
 get_input:
 
+    ret
+; END:get_input
 
+; BEGIN:set_gsa
 set_gsa:
 
+    ret
+; END:set_gsa
 
+; BEGIN:move_gsa
 move_gsa:
 
+    ret
+; END:move_gsa
 
+; BEGIN:in_gsa
 in_gsa:
 
+    ret
+; END:in_gsa
 
+; BEGIN:display_score
 display_score:
 
+    ret
+; END:display_score
 
+; BEGIN:reset_game
 reset_game:
 
+    ret
+; END:reset_game
 
+; BEGIN:detect_full_line
 detect_full_line:
 
+    ret
+; END:detect_full_line
 
+; BEGIN:remove_full_line
 remove_full_line:
 
+    ret
+; END:remove_full_line
 
+; BEGIN:increment_score
 increment_score:
 
+    ret
+; END:increment_score
 
+; BEGIN:act
 act:
 
+    ret
+; END:act
 
+; BEGIN:rotate_tetrominoe
 rotate_tetrominoe:
 
+    ret
+; END:rotate_tetrominoe
 
+; BEGIN:detect_collision
 detect_collision:
 
+    ret
+; END:detect_collision
 
+; BEGIN:draw_gsa
 draw_gsa:
+    
+    ret
+; END:draw_gsa
 
-
+; BEGIN:draw_tetromino
 draw_tetromino:
 
+    ret
+; END:draw_tetromino
 
+; BEGIN:generate_tetrominoe
 generate_tetrominoe:
+
+    ret
+; END:generate_tetrominoe

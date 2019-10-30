@@ -222,6 +222,12 @@ draw_gsa:
     ret
 ; END:draw_gsa
 
+; BEGIN:draw_tetromino
+draw_tetromino:
+
+    ret
+; END:draw_tetromino
+
 ; BEGIN:get_input
 get_input:
 
@@ -281,12 +287,6 @@ detect_collision:
 
     ret
 ; END:detect_collision
-
-; BEGIN:draw_tetromino
-draw_tetromino:
-
-    ret
-; END:draw_tetromino
 
 ; BEGIN:generate_tetrominoe
 generate_tetrominoe:

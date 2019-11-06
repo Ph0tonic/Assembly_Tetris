@@ -160,6 +160,7 @@ wait:
     addi t0, zero, 256 ; 2^10 for simulation
     add t1, zero, zero ; initialize loop variable to 0
 
+    ; TODO: Comment for inner label
     wait_loop:
     addi t1, t1, 1 
     blt t1, t0, wait_loop

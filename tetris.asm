@@ -304,6 +304,18 @@ draw_tetromino:
     ret
 ; END:draw_tetromino
 
+; BEGIN:generate_tetrominoe
+generate_tetrominoe:
+
+    ret
+; END:generate_tetrominoe
+
+; BEGIN:rotate_tetrominoe
+rotate_tetrominoe:
+
+    ret
+; END:rotate_tetrominoe
+
 ; BEGIN:get_input
 get_input:
 
@@ -352,23 +364,11 @@ act:
     ret
 ; END:act
 
-; BEGIN:rotate_tetrominoe
-rotate_tetrominoe:
-
-    ret
-; END:rotate_tetrominoe
-
 ; BEGIN:detect_collision
 detect_collision:
 
     ret
 ; END:detect_collision
-
-; BEGIN:generate_tetrominoe
-generate_tetrominoe:
-
-    ret
-; END:generate_tetrominoe
 
 
   ;; TODO Insert your code here

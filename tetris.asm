@@ -85,6 +85,8 @@ main:
     addi t0, zero, W
     stw t0, T_orientation(zero)
 
+    call wait
+
     call draw_tetromino
 
     addi a0, zero, PLACED
@@ -153,12 +155,14 @@ set_pixel:
 ; END:set_pixel
 
 ; BEGIN:wait
-wait:
-    ; val 2^20 for real
-    ; val Smaller for simulation
+wait:    
+    ;addi t0, zero, 1048576 ; 2^20
+    addi t0, zero, 256 ; 2^10 for simulation
+    add t1, zero, zero ; initialize loop variable to 0
 
-    ; TODO: A simple loop from  val to 0
-    
+    wait_loop:
+    addi t1, t1, 1 
+    blt t1, t0, wait_loop
     ret
 ; END:wait
 

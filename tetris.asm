@@ -170,9 +170,12 @@ in_gsa:
     ;v0: 1 if out of GSA, 0 if in GSA
     add v0, zero, zero
     cmpgei v0, a0, X_LIMIT
-    cmpgei v0, a1, Y_LIMIT
-    cmplt v0, a0, zero
-    cmplt v0, a1, zero
+    cmpgei v1, a1, Y_LIMIT
+    or v0, v0, v1
+    cmplt v1, a0, zero
+    or v0, v0, v1
+    cmplt v1, a1, zero
+    or v0, v0, v1
     ret
 
 ; END:in_gsa

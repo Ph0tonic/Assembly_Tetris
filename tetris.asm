@@ -255,6 +255,7 @@ draw_tetromino:
 
     slli t5, s3, 2
     add t5, t5, s2
+    slli t5, t5, 2
     ldw t0, DRAW_Ax(t5)
     ldw t1, DRAW_Ay(t5)
 

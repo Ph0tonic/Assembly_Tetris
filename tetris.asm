@@ -71,42 +71,23 @@ main:
 
     call clear_leds
 
-    addi a0, zero, PLACED
-
-    addi t0, zero, START_X
-    stw t0, T_X(zero)
-
-    addi t0, zero, START_Y
-    stw t0, T_Y(zero)
-
-    addi t0, zero, B
-    stw t0, T_type(zero)
-    
-    addi t0, zero, W
-    stw t0, T_orientation(zero)
-
-    call wait
-
+    call generate_tetrominoe
+;    call wait
+	addi a0, zero, PLACED
     call draw_tetromino
-
-    addi a0, zero, PLACED
-
-    addi t0, zero, 1
-    stw t0, T_X(zero)
-
-    addi t0, zero, 7
-    stw t0, T_Y(zero)
-
-    addi t0, zero, T
-    stw t0, T_type(zero)
-    
-    addi t0, zero, W
-    stw t0, T_orientation(zero)
-
-    call draw_tetromino
-
+;	call wait
+;	call wait
     call draw_gsa
 
+    ;call clear_leds
+
+    ;call generate_tetrominoe
+	;call draw_tetromino
+	
+    ;call draw_gsa
+	call wait
+	call wait
+	call wait
     call end
 
 ; END:main
@@ -306,6 +287,26 @@ draw_tetromino:
 
 ; BEGIN:generate_tetrominoe
 generate_tetrominoe:
+    addi t0, zero, START_X
+    stw t0, T_X(zero)
+
+    addi t0, zero, START_Y
+    stw t0, T_Y(zero)
+
+    addi t0, zero, N
+    stw t0, T_orientation(zero)
+
+    addi t1, zero, 7
+    addi t2, zero, 5
+
+    loop_generate_tetromino:
+
+    ldw t0, RANDOM_NUM(zero)
+    and t0, t0, t1
+
+    bge t0, t2, loop_generate_tetromino
+    
+    stw t0, T_type(zero)
 
     ret
 ; END:generate_tetrominoe

@@ -10,6 +10,8 @@
   .equ RANDOM_NUM, 0x2010           ; Random number generator address
   .equ BUTTONS, 0x2030              ; Buttons addresses
 
+  .equ STACK, 0x2000
+
   ;; type enumeration
   .equ C, 0x00
   .equ B, 0x01
@@ -65,32 +67,41 @@
 
 ; BEGIN:main
 main:
+    addi sp, zero, STACK
+
     call clear_leds
 
-    addi a2, zero, PLACED
-    addi a0, zero, 1
-    addi a1, zero, 1
-    ;call set_gsa
+    addi a0, zero, PLACED
+
+    addi t0, zero, START_X
+    stw t0, T_X(zero)
+
+    addi t0, zero, START_Y
+    stw t0, T_Y(zero)
+
+    addi t0, zero, B
+    stw t0, T_type(zero)
     
-    addi a0, zero, 0
-    addi a1, zero, 0
-    ;call set_gsa
+    addi t0, zero, W
+    stw t0, T_orientation(zero)
 
-    addi a0, zero, 6
-    addi a1, zero, 7
-    ;call set_gsa
+    call draw_tetromino
 
-    addi a0, zero, 9
-    addi a1, zero, 3
-    ;call set_gsa
+    addi a0, zero, PLACED
 
-    addi a0, zero, 11
-    addi a1, zero, 7
-    call set_gsa
+    addi t0, zero, 1
+    stw t0, T_X(zero)
 
-    addi a0, zero, 11
-    addi a1, zero, 5
-    call set_gsa
+    addi t0, zero, 7
+    stw t0, T_Y(zero)
+
+    addi t0, zero, T
+    stw t0, T_type(zero)
+    
+    addi t0, zero, W
+    stw t0, T_orientation(zero)
+
+    call draw_tetromino
 
     call draw_gsa
 
@@ -194,7 +205,7 @@ set_gsa:
 draw_gsa:
     ; TODO: Comments for labels
     
-    addi sp, sp, 4
+    addi sp, sp, -4
     stw ra, 0(sp)
     
     addi t5, zero, X_LIMIT
@@ -217,18 +228,70 @@ draw_gsa:
     call set_pixel
 
     draw_gsa_inner_loop_end:
-    bne t5, zero, draw_gsa_inner_loop
-    bne t6, zero, draw_gsa_outer_loop
+    bne t6, zero, draw_gsa_inner_loop
+    bne t5, zero, draw_gsa_outer_loop
     
     ldw ra, 0(sp)
-    addi sp, sp, -4
+    addi sp, sp, 4
 
     ret
 ; END:draw_gsa
 
 ; BEGIN:draw_tetromino
 draw_tetromino:
+    ;a0: GSA value p
+
+    ; Saving ra register
+    addi sp, sp, -4
+    stw ra, 0(sp)
+
+    ; Param for value type in gsa
+    add a2, zero, a0
+
+    ldw s0, T_X(zero)
+    ldw s1, T_Y(zero)
+    ldw s2, T_orientation(zero)
+    ldw s3, T_type(zero)
+
+    slli t5, s3, 2
+    add t5, t5, s2
+    ldw t0, DRAW_Ax(t5)
+    ldw t1, DRAW_Ay(t5)
+
+    add a0, s0, zero
+    add a1, s1, zero
+
+    ; TODO: Comment inner loop
+    add t2, zero, zero ; Counter
+    addi t3, zero, 4 ; Max value
+    draw_tetromino_loop:
     
+    call in_gsa
+
+    bne v0, zero, draw_tetromino_loop_zap_set
+    call set_gsa
+    
+    ; TODO: Loop comment
+    draw_tetromino_loop_zap_set:
+
+    ; Increment coordinates
+    ldw s4, 0(t0)
+    ldw s5, 0(t1)
+
+    add a0, s0, s4
+    add a1, s1, s5
+
+    addi t2, t2, 1
+    addi t0, t0, 4
+    addi t1, t1, 4
+
+    ; TODO: End loop comment
+    bne t2, t3, draw_tetromino_loop
+
+    ; Restore ra
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+
     ret
 ; END:draw_tetromino
 
@@ -299,14 +362,7 @@ generate_tetrominoe:
 ; END:generate_tetrominoe
 
 
-; BEGIN:end
-end:
-
-; END:end
-
-
-
-
+  ;; TODO Insert your code here
 font_data:
   .word 0xFC  ; 0
   .word 0x60  ; 1
@@ -322,47 +378,47 @@ font_data:
 C_N_X:
   .word 0x00
   .word 0xFFFFFFFF
-  .word 0x00
+  .word 0xFFFFFFFF
 
 C_N_Y:
   .word 0xFFFFFFFF
   .word 0x00
-  .word 0x01
+  .word 0xFFFFFFFF
 
 C_E_X:
   .word 0x01
   .word 0x00
-  .word 0xFFFFFFFF
+  .word 0x01
 
 C_E_Y:
   .word 0x00
   .word 0xFFFFFFFF
-  .word 0x00
+  .word 0xFFFFFFFF
 
 C_So_X:
   .word 0x01
   .word 0x00
-  .word 0xFFFFFFFF
+  .word 0x01
 
 C_So_Y:
   .word 0x00
   .word 0x01
-  .word 0x00
+  .word 0x01
 
 C_W_X:
   .word 0xFFFFFFFF
   .word 0x00
-  .word 0x01
+  .word 0xFFFFFFFF
 
 C_W_Y:
   .word 0x00
   .word 0x01
-  .word 0x00
+  .word 0x01
 
 B_N_X:
   .word 0xFFFFFFFF
-  .word 0x02
   .word 0x01
+  .word 0x02
 
 B_N_Y:
   .word 0x00
@@ -376,13 +432,13 @@ B_E_X:
 
 B_E_Y:
   .word 0xFFFFFFFF
-  .word 0x02
   .word 0x01
+  .word 0x02
 
 B_So_X:
-  .word 0x01
   .word 0xFFFFFFFE
   .word 0xFFFFFFFF
+  .word 0x01
 
 B_So_Y:
   .word 0x00
@@ -395,98 +451,99 @@ B_W_X:
   .word 0x00
 
 B_W_Y:
-  .word 0x01
   .word 0xFFFFFFFE
   .word 0xFFFFFFFF
+  .word 0x01
 
 T_N_X:
-  .word 0x01
-  .word 0xFFFFFFFE
+  .word 0xFFFFFFFF
+  .word 0x00
   .word 0x01
 
 T_N_Y:
   .word 0x00
-  .word 0x00
   .word 0xFFFFFFFF
+  .word 0x00
 
 T_E_X:
   .word 0x00
+  .word 0x01
+  .word 0x00
+
+T_E_Y:
+  .word 0xFFFFFFFF
   .word 0x00
   .word 0x01
 
-T_E_Y:
-  .word 0x01
-  .word 0xFFFFFFFE
-  .word 0x01
-
 T_So_X:
-  .word 0x01
-  .word 0xFFFFFFFE
+  .word 0xFFFFFFFF
+  .word 0x00
   .word 0x01
 
 T_So_Y:
   .word 0x00
-  .word 0x00
   .word 0x01
+  .word 0x00
 
 T_W_X:
   .word 0x00
-  .word 0x00
   .word 0xFFFFFFFF
+  .word 0x00
 
 T_W_Y:
-  .word 0x01
-  .word 0xFFFFFFFE
+  .word 0xFFFFFFFF
+  .word 0x00
   .word 0x01
 
 S_N_X:
   .word 0xFFFFFFFF
-  .word 0x01
+  .word 0x00
   .word 0x01
 
 S_N_Y:
   .word 0x00
   .word 0xFFFFFFFF
-  .word 0x00
+  .word 0xFFFFFFFF
 
 S_E_X:
   .word 0x00
   .word 0x01
-  .word 0x00
+  .word 0x01
 
 S_E_Y:
   .word 0xFFFFFFFF
-  .word 0x01
+  .word 0x00
   .word 0x01
 
 S_So_X:
-  .word 0xFFFFFFFF
-  .word 0x01
-  .word 0x01
-
-S_So_Y:
   .word 0x01
   .word 0x00
   .word 0xFFFFFFFF
+
+S_So_Y:
+  .word 0x00
+  .word 0x01
+  .word 0x01
 
 S_W_X:
   .word 0x00
   .word 0xFFFFFFFF
-  .word 0x00
+  .word 0xFFFFFFFF
 
 S_W_Y:
   .word 0x01
-  .word 0xFFFFFFFF
-  .word 0xFFFFFFFF
-L_N_X:
-  .word 0x01
   .word 0x00
-  .word 0xFFFFFFFE
+  .word 0xFFFFFFFF
+
+L_N_X:
+  .word 0xFFFFFFFF
+  .word 0x01
+  .word 0x01
 
 L_N_Y:
   .word 0x00
+  .word 0x00
   .word 0xFFFFFFFF
-  .word 0x01
 
 L_E_X:
   .word 0x00
@@ -495,13 +552,13 @@ L_E_X:
 
 L_E_Y:
   .word 0xFFFFFFFF
-  .word 0x02
-  .word 0x00
+  .word 0x01
+  .word 0x01
 
 L_So_X:
+  .word 0xFFFFFFFF
   .word 0x01
-  .word 0xFFFFFFFE
-  .word 0x00
+  .word 0xFFFFFFFF
 
 L_So_Y:
   .word 0x00
@@ -515,10 +572,10 @@ L_W_X:
 
 L_W_Y:
   .word 0x01
-  .word 0xFFFFFFFE
-  .word 0x00
+  .word 0xFFFFFFFF
+  .word 0xFFFFFFFF
 
-DRAW_Ax:  ; address of shape arrays, x axis
+DRAW_Ax:                        ; address of shape arrays, x axis
   .word C_N_X
   .word C_E_X
   .word C_So_X
@@ -540,7 +597,7 @@ DRAW_Ax:  ; address of shape arrays, x axis
   .word L_So_X
   .word L_W_X
 
-DRAW_Ay:  ; address of shape arrays, y_axis
+DRAW_Ay:                        ; address of shape arrays, y_axis
   .word C_N_Y
   .word C_E_Y
   .word C_So_Y
@@ -561,3 +618,7 @@ DRAW_Ay:  ; address of shape arrays, y_axis
   .word L_E_Y
   .word L_So_Y
   .word L_W_Y
+; BEGIN:end
+end:
+
+; END:end

@@ -313,6 +313,44 @@ generate_tetrominoe:
 
 ; BEGIN:rotate_tetrominoe
 rotate_tetrominoe:
+    ; if a0 = 0x02(rotL value)
+    addi t0, zero, 0x02
+    beq a0, t0, rotL
+
+    ;else if a0 = 0x10(rotR value)
+    addi t0, zero, 0x10
+    beq a0, t0, rotR
+    
+    ; else quit
+    ret
+
+    rotL:
+    ldw t0, T_orientation(zero); get the actual orientation
+    beq t0, N, rotL_reset_pos ; if t_orientation = N then assign the W value (w value is the position value before N)
+
+    ; Else : substract one at the actual position
+    subi t0, t0, 1 ; t0 -= 1
+    br save_new_orientation ; jump to saving section
+
+    rotL_reset_pos:
+    addi t0, zero, W; set the w value to t0
+    br save_new_orientation ; jump to saving section
+
+    rotR:
+    ldw t0, T_orientation(zero); get the actual orientation
+    beq t0, W, rotR_reset_pos ; if actual position is w we need to set the new position to N (N is the next position value after w)
+
+    ; else we add 1 at the position
+    addi t0, t0, 1; t0 += 1
+
+    br save_new_orientation ; jump to saving section
+
+    rotR_reset_pos:
+    addi t0, zero, N; assign th value of n in t0
+    br save_new_orientation ; jump to saving section
+    
+    save_new_orientation:
+    stw t0, T_orientation(zero) ; save the new position (t0) in the memory
 
     ret
 ; END:rotate_tetrominoe

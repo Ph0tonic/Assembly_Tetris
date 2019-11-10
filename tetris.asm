@@ -311,6 +311,107 @@ generate_tetrominoe:
     ret
 ; END:generate_tetrominoe
 
+; BEGIN:detect_collision
+detect_collision:
+    ; a0 => value of colision
+    ; v0 => return value, same as a0 if collision detected otherwise NONE
+    ;TODO: Code this function
+
+    ; Possible values:
+    ; - W_COL, 0
+    ; - E_COL, 1
+    ; - So_COL, 2
+    ; - OVERLAP, 3
+    ; - NONE, 4
+
+    ; Saving ra register
+    addi sp, sp, -8
+    stw ra, 4(sp)
+    stw a0, 0(sp)
+
+    ; Param for value type in gsa
+    add a2, zero, a0
+
+    ldw s0, T_X(zero)
+    ldw s1, T_Y(zero)
+    ldw s2, T_orientation(zero)
+    ldw s3, T_type(zero)
+
+    ; Config offset for collision detection
+    cmpeqi s4, a0, E_COL
+    add s0, s0, s4
+    cmpeqi s4, a0, W_COL
+    sub s1, s1, s4
+    cmpeqi s4, a0, So_COL
+    add s1, s1, s4
+    
+    ; Get coord values for tetromino
+    slli t5, s3, 2
+    add t5, t5, s2
+    slli t5, t5, 2
+    ldw t0, DRAW_Ax(t5)
+    ldw t1, DRAW_Ay(t5)
+
+    add a0, s0, zero
+    add a1, s1, zero
+
+    ; TODO: Comment inner loop
+    add t2, zero, zero ; Counter
+    addi t3, zero, 4 ; Max value
+    detect_collision_loop:
+    
+    ; Detect if is in_gsa
+    add v0, zero, zero
+    cmpgei v0, a0, X_LIMIT
+    cmpgei v1, a1, Y_LIMIT
+    or v0, v0, v1
+    cmplt v1, a0, zero
+    or v0, v0, v1
+    bne v0, zero, detect_collision_colide
+    
+    ; Check if 
+    blt a0, zero, detect_collision_zap
+
+    ; Detect collision of current tetromino part
+    call get_gsa
+    addi t0, zero, NOTHING
+    bne v0, t0, detect_collision_colide   
+    
+    ; TODO: Loop comment
+    detect_collision_zap:
+
+    ; Increment coordinates
+    ldw s4, 0(t0)
+    ldw s5, 0(t1)
+
+    add a0, s0, s4
+    add a1, s1, s5
+
+    addi t2, t2, 1
+    addi t0, t0, 4
+    addi t1, t1, 4
+
+    ; TODO: End loop comment
+    bne t2, t3, detect_collision_loop
+
+    detect_collision_none:
+    addi v0, zero, NONE
+
+    ; Restore ra
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+    ret
+
+    detect_collision_colide:
+
+    ; Restore ra
+    ldw ra, 4(sp)
+    ldw a0, 0(sp)
+    addi sp, sp, 8
+
+    ret
+; END:detect_collision
+
 ; BEGIN:rotate_tetrominoe
 rotate_tetrominoe:
 
@@ -364,13 +465,6 @@ act:
 
     ret
 ; END:act
-
-; BEGIN:detect_collision
-detect_collision:
-
-    ret
-; END:detect_collision
-
 
   ;; TODO Insert your code here
 font_data:

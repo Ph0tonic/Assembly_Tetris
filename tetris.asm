@@ -532,7 +532,34 @@ rotate_tetrominoe:
 
 ; BEGIN:get_input
 get_input:
+    addi t0, zero, 4
+    ldw t1, BUTTONS(t0)
 
+    addi t2, zero, 1
+    addi v0, zero, moveL
+    bne v0, zero, get_input_end
+
+    addi t2, zero, 1
+    addi v0, zero, rotL
+    bne v0, zero, get_input_end
+    
+    addi t2, zero, 1
+    addi v0, zero, reset
+    bne v0, zero, get_input_end
+    
+    addi t2, zero, 1
+    addi v0, zero, rotR
+    bne v0, zero, get_input_end
+    
+    addi t2, zero, 1
+    addi v0, zero, moveR
+    bne v0, zero, get_input_end
+
+    addi v0, zero, zero
+
+    get_input_end:
+    stw zero, BUTTONS(t0)
+    
     ret
 ; END:get_input
 

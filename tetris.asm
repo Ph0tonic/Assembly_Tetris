@@ -231,6 +231,43 @@ set_gsa:
     ret
 ; END:set_gsa
 
+; BEGIN:reset_gsa
+reset_gsa:
+    ; Saving ra register
+    addi sp, sp, -16
+    stw ra, 0(sp)
+    stw a0, 4(sp)
+    stw a1, 8(sp)
+    stw a2, 12(sp)
+
+    addi t0, zero, X_LIMIT
+    addi t1, zero, Y_LIMIT
+
+    addi a2, zero, Empty
+
+    stw a0, zero, zero
+    reset_game_empty_x:
+    stw a1, zero, zero
+
+    reset_game_empty_y:
+    call set_gsa
+
+    addi a1, a1, 1 
+    blt a1, t1, reset_game_empty_y
+
+    addi a0, a0, 1
+    blt a0, t0, reset_game_empty_x
+
+    ; Restore ra
+    ldw ra, 0(sp)
+    ldw a0, 4(sp)
+    ldw a1, 8(sp)
+    ldw a2, 12(sp)
+    addi sp, sp, 16
+
+    ret
+; END:reset_gsa
+
 ; BEGIN:draw_gsa
 draw_gsa:
     ; TODO: Comments for labels
@@ -480,6 +517,13 @@ detect_collision:
     ret
 ; END:detect_collision
 
+
+; BEGIN:act
+act:
+
+    ret
+; END:act
+
 ; BEGIN:rotate_tetrominoe
 rotate_tetrominoe:
 
@@ -498,14 +542,26 @@ move_gsa:
     ret
 ; END:move_gsa
 
-; BEGIN:display_score
-display_score:
-
-    ret
-; END:display_score
-
 ; BEGIN:reset_game
 reset_game:
+    ; Saving ra register
+    addi sp, sp, -4
+    stw ra, 0(sp)
+    
+    ; Game score set to zero
+    stw zero, SCORE(zero)
+
+    ; New tetrominoe generated
+    call generate_tetrominoe
+
+    ; Empty GSA
+    call reset_gsa
+    
+    ; Reset the leds accordingly to GSA
+    call draw_gsa
+
+    ; Reset score counter leds
+    call display_score
 
     ret
 ; END:reset_game
@@ -524,17 +580,18 @@ remove_full_line:
 
 ; BEGIN:increment_score
 increment_score:
-
+    ldw t0, SCORE(zero)
+    addi t0, t0, 1
+    stw t0, SCORE(zero)
     ret
 ; END:increment_score
 
-; BEGIN:act
-act:
-
+; BEGIN:display_score
+display_score:
+    ; TODO: Display score
     ret
-; END:act
+; END:display_score
 
-  ;; TODO Insert your code here
 font_data:
   .word 0xFC  ; 0
   .word 0x60  ; 1

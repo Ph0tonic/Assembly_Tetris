@@ -67,27 +67,68 @@
 
 ; BEGIN:main
 main:
+    ; init stack pointer
     addi sp, zero, STACK
 
     call clear_leds
 
     call generate_tetrominoe
-;    call wait
-	addi a0, zero, PLACED
-    call draw_tetromino
-;	call wait
-;	call wait
+
+    ; COLLIDE 1
+    addi a0, zero, 7 ; x
+    addi a1, zero, 0 ; y
+    addi a2, zero, PLACED
+
+    call set_gsa
+
+    addi a0, zero, E_COL
+    call detect_collision
+
+    ; COLLIDE 2
+    addi a0, zero, 4 ; x
+    addi a1, zero, 1 ; y
+    addi a2, zero, PLACED
+
+    call set_gsa
+
+    addi a0, zero, W_COL
+    call detect_collision
+
+    ; COLLIDE 3
+    addi a0, zero, 6 ; x
+    addi a1, zero, 2 ; y
+    addi a2, zero, PLACED
+
+	call set_gsa
+
+    addi a0, zero, So_COL
+    call detect_collision
+
+    ; COLLIDE 4
+    addi a0, zero, 5 ; x
+    addi a1, zero, 0 ; y
+    addi a2, zero, PLACED
+
+    call set_gsa
+
+    addi a0, zero, OVERLAP
+    call detect_collision
+
+
+    call generate_tetrominoe
+    addi a0, zero, PLACED
+
+
+    
     call draw_gsa
 
-    ;call clear_leds
+    ; call clear_leds
 
-    ;call generate_tetrominoe
-	;call draw_tetromino
+    ; call generate_tetrominoe
+    ; call draw_tetromino
 	
-    ;call draw_gsa
-	call wait
-	call wait
-	call wait
+    ; call draw_gsa
+    call wait
     call end
 
 ; END:main
@@ -329,8 +370,14 @@ detect_collision:
     stw ra, 4(sp)
     stw a0, 0(sp)
 
-    ; Param for value type in gsa
-    add a2, zero, a0
+    ; Saving sa register
+    addi sp, sp, -24
+    stw s0, 0(sp)
+    stw s1, 4(sp)
+    stw s2, 8(sp)
+    stw s3, 12(sp)
+    stw s4, 16(sp)
+    stw s5, 20(sp)
 
     ldw s0, T_X(zero)
     ldw s1, T_Y(zero)
@@ -341,7 +388,7 @@ detect_collision:
     cmpeqi s4, a0, E_COL
     add s0, s0, s4
     cmpeqi s4, a0, W_COL
-    sub s1, s1, s4
+    sub s0, s0, s4
     cmpeqi s4, a0, So_COL
     add s1, s1, s4
     
@@ -374,8 +421,8 @@ detect_collision:
 
     ; Detect collision of current tetromino part
     call get_gsa
-    addi t0, zero, NOTHING
-    bne v0, t0, detect_collision_colide   
+    addi t4, zero, NOTHING
+    bne v0, t4, detect_collision_colide   
     
     ; TODO: Loop comment
     detect_collision_zap:
@@ -397,17 +444,38 @@ detect_collision:
     detect_collision_none:
     addi v0, zero, NONE
 
-    ; Restore ra
-    ldw ra, 0(sp)
-    addi sp, sp, 4
-    ret
-
-    detect_collision_colide:
+    ; Saving sa register
+    ldw s0, 0(sp)
+    ldw s1, 4(sp)
+    ldw s2, 8(sp)
+    ldw s3, 12(sp)
+    ldw s4, 16(sp)
+    ldw s5, 20(sp)
+    addi sp, sp, 24
 
     ; Restore ra
     ldw ra, 4(sp)
     ldw a0, 0(sp)
     addi sp, sp, 8
+    ret
+
+    detect_collision_colide:
+
+    ; Saving sa register
+    ldw s0, 0(sp)
+    ldw s1, 4(sp)
+    ldw s2, 8(sp)
+    ldw s3, 12(sp)
+    ldw s4, 16(sp)
+    ldw s5, 20(sp)
+    addi sp, sp, 24
+
+    ; Restore ra
+    ldw ra, 4(sp)
+    ldw a0, 0(sp)
+    addi sp, sp, 8
+
+	add v0, a0, zero
 
     ret
 ; END:detect_collision

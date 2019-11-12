@@ -140,8 +140,6 @@ main:
 
     call generate_tetrominoe
     addi a0, zero, PLACED
-
-
     
     call draw_gsa
 
@@ -205,7 +203,6 @@ wait:
     addi t0, zero, 256 ; 2^10 for simulation
     add t1, zero, zero ; initialize loop variable to 0
 
-    ; TODO: Comment for inner label
     wait_loop:
     addi t1, t1, 1 
     blt t1, t0, wait_loop
@@ -352,7 +349,6 @@ draw_tetromino:
     add a0, s0, zero
     add a1, s1, zero
 
-    ; TODO: Comment inner loop
     add t2, zero, zero ; Counter
     addi t3, zero, 4 ; Max value
     draw_tetromino_loop:
@@ -362,7 +358,6 @@ draw_tetromino:
     bne v0, zero, draw_tetromino_loop_zap_set
     call set_gsa
     
-    ; TODO: Loop comment
     draw_tetromino_loop_zap_set:
 
     ; Increment coordinates
@@ -376,7 +371,6 @@ draw_tetromino:
     addi t0, t0, 4
     addi t1, t1, 4
 
-    ; TODO: End loop comment
     bne t2, t3, draw_tetromino_loop
 
     ; Restore ra
@@ -416,14 +410,6 @@ generate_tetrominoe:
 detect_collision:
     ; a0 => value of colision
     ; v0 => return value, same as a0 if collision detected otherwise NONE
-    ;TODO: Code this function
-
-    ; Possible values:
-    ; - W_COL, 0
-    ; - E_COL, 1
-    ; - So_COL, 2
-    ; - OVERLAP, 3
-    ; - NONE, 4
 
     ; Saving ra register
     addi sp, sp, -8
@@ -462,7 +448,6 @@ detect_collision:
     add a0, s0, zero
     add a1, s1, zero
 
-    ; TODO: Comment inner loop
     add t2, zero, zero ; Counter
     addi t3, zero, 4 ; Max value
     detect_collision_loop:
@@ -484,7 +469,6 @@ detect_collision:
     addi t4, zero, NOTHING
     bne v0, t4, detect_collision_colide   
     
-    ; TODO: Loop comment
     detect_collision_zap:
 
     ; Increment coordinates
@@ -498,7 +482,6 @@ detect_collision:
     addi t0, t0, 4
     addi t1, t1, 4
 
-    ; TODO: End loop comment
     bne t2, t3, detect_collision_loop
 
     detect_collision_none:
@@ -668,12 +651,6 @@ get_input:
     ret
 ; END:get_input
 
-; BEGIN:move_gsa
-move_gsa:
-
-    ret
-; END:move_gsa
-
 ; BEGIN:reset_game
 reset_game:
     ; Saving ra register
@@ -714,7 +691,15 @@ remove_full_line:
 increment_score:
     ldw t0, SCORE(zero)
     addi t0, t0, 1
-    addi t1, zero, 999
+
+    ; Check for max value (999)
+    addi t1, zero, 1000
+    blt t0, t1, increment_score
+
+    ; Reset score to zero
+    add t0, zero, zero
+
+    increment_score_set:
 
     stw t0, SCORE(zero)
     ret

@@ -591,12 +591,12 @@ act:
 
 ; BEGIN:rotate_tetrominoe
 rotate_tetrominoe:
-    ; if a0 = 0x02(rotL value)
-    addi t0, zero, 0x02
+    ; if a0 = rotL
+    addi t0, zero, rotL
     beq a0, t0, rotL_label
 
-    ;else if a0 = 0x10(rotR value)
-    addi t0, zero, 0x10
+    ;else if a0 = rotR
+    addi t0, zero, rotR
     beq a0, t0, rotR_label
     
     ; else quit
@@ -714,6 +714,8 @@ remove_full_line:
 increment_score:
     ldw t0, SCORE(zero)
     addi t0, t0, 1
+    addi t1, zero, 999
+
     stw t0, SCORE(zero)
     ret
 ; END:increment_score

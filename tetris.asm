@@ -79,7 +79,7 @@ main:
     call rotate_tetrominoe
 
 ;	call wait
-	addi a0, zero, 0x02
+	addi a0, zero, rotL
 
     call rotate_tetrominoe
     call rotate_tetrominoe
@@ -88,7 +88,7 @@ main:
     call rotate_tetrominoe
     call rotate_tetrominoe
     
-    addi a0, zero, 0x10
+    addi a0, zero, rotR
 
     call rotate_tetrominoe
     call rotate_tetrominoe

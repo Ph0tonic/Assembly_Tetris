@@ -677,8 +677,49 @@ reset_game:
 
 ; BEGIN:detect_full_line
 detect_full_line:
+    ; Saving ra register
+    addi sp, sp, -4
+    stw ra, 0(sp)
 
+    addi t3, zero, NOTHING
+    addi t0, zero, Y_LIMIT
+
+    detect_full_line_y:
+    subi t0, t0, 1
+    blt t0, zero, full_line_none
+
+    addi t1, zero, x_LIMIT
+    
+    detect_full_line_x:
+    subi t1, t1, 1
+
+    add a0, t1, zero
+    add a1, t0, zero
+    call get_gsa
+
+    ; If empty start detection of a new line
+    beq v0, t3, detect_full_line_y
+
+    ; Iterate over the line if not empty
+    bne t1, zero, detect_full_line_x
+
+    ; Full line
+    full_line_detected:
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+
+    add v0, t0, zero
     ret
+
+    full_line_none:
+    ; Return no full line detected
+    
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+
+    addi v0, zero, Y_LIMIT
+    ret
+
 ; END:detect_full_line
 
 ; BEGIN:remove_full_line

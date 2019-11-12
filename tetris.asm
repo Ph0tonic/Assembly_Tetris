@@ -73,11 +73,28 @@ main:
 
     call generate_tetrominoe
 ;    call wait
-	addi a0, zero, PLACED
-    call draw_tetromino
+
 ;	call wait
+    call rotate_tetrominoe
+
 ;	call wait
-    call draw_gsa
+	addi a0, zero, 0x02
+
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    
+    addi a0, zero, 0x10
+
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
+    call rotate_tetrominoe
 
     ;call clear_leds
 
@@ -315,30 +332,32 @@ generate_tetrominoe:
 rotate_tetrominoe:
     ; if a0 = 0x02(rotL value)
     addi t0, zero, 0x02
-    beq a0, t0, rotL
+    beq a0, t0, rotL_label
 
     ;else if a0 = 0x10(rotR value)
     addi t0, zero, 0x10
-    beq a0, t0, rotR
+    beq a0, t0, rotR_label
     
     ; else quit
     ret
 
-    rotL:
+    rotL_label:
     ldw t0, T_orientation(zero); get the actual orientation
-    beq t0, N, rotL_reset_pos ; if t_orientation = N then assign the W value (w value is the position value before N)
+	addi t1, zero, N
+    beq t0, t1, rotL_reset_pos ; if t_orientation = N then assign the W value (w value is the position value before N)
 
     ; Else : substract one at the actual position
-    subi t0, t0, 1 ; t0 -= 1
+    addi t0, t0, -1 ; t0 -= 1
     br save_new_orientation ; jump to saving section
 
     rotL_reset_pos:
-    addi t0, zero, W; set the w value to t0
+    addi t0, zero, W ; set the w value to t0
     br save_new_orientation ; jump to saving section
 
-    rotR:
+    rotR_label:
     ldw t0, T_orientation(zero); get the actual orientation
-    beq t0, W, rotR_reset_pos ; if actual position is w we need to set the new position to N (N is the next position value after w)
+    addi t1, zero, W
+	beq t0, t1, rotR_reset_pos ; if actual position is w we need to set the new position to N (N is the next position value after w)
 
     ; else we add 1 at the position
     addi t0, t0, 1; t0 += 1

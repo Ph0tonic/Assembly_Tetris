@@ -520,6 +520,48 @@ detect_collision:
 
 ; BEGIN:act
 act:
+    ; Params: a0 -> action
+    ; Return: v0 -> 0 if succeeded otherwise 1
+    ; Saving ra register
+    addi sp, sp, -4
+    stw ra, 0(sp)
+
+    cmpeqi t0, a0, moveL
+    bne t0, zero, act_move
+    cmpeqi t0, a0, moveR
+    bne t0, zero, act_move
+    cmpeqi t0, a0, moveD
+    bne t0, zero, act_move
+
+    cmpeqi t0, a0, rotL
+    bne t0, zero, act_rotate
+    cmpeqi t0, a0, rotR
+    bne t0, zero, act_rotate
+
+    cmpeqi t0, a0, reset
+    bne t0, zero, act_reset
+
+    br act_end
+
+    act_move:
+    ; TODO: Move
+
+    ; TODO: Test collision in direction choosen and if success then move tx, ty
+    ; othw return 1
+
+    act_rotate:
+    ; TODO: Rotate
+
+    act_reset:
+    call reset
+    ; TODO: Reset
+
+
+    act_end:
+
+    ; Restore ra
+    ldw ra, 0(sp)
+    addi sp, sp, 4
 
     ret
 ; END:act
@@ -559,7 +601,7 @@ get_input:
 
     get_input_end:
     stw zero, BUTTONS(t0)
-    
+
     ret
 ; END:get_input
 

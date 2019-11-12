@@ -685,13 +685,13 @@ detect_full_line:
     addi t0, zero, Y_LIMIT
 
     detect_full_line_y:
-    subi t0, t0, 1
+    addi t0, t0, -1
     blt t0, zero, full_line_none
 
     addi t1, zero, x_LIMIT
     
     detect_full_line_x:
-    subi t1, t1, 1
+    addi t1, t1, -1
 
     add a0, t1, zero
     add a1, t0, zero

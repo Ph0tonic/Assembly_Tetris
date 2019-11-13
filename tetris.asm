@@ -533,16 +533,16 @@ act:
     stw ra, 0(sp)
 
     cmpeqi t0, a0, moveL
-    bne t0, zero, act_move
+    bne t0, zero, act_moveW
     cmpeqi t0, a0, moveR
-    bne t0, zero, act_move
+    bne t0, zero, act_moveE
     cmpeqi t0, a0, moveD
-    bne t0, zero, act_move
+    bne t0, zero, act_moveSo
 
     cmpeqi t0, a0, rotL
-    bne t0, zero, act_rotate
+    bne t0, zero, act_rotateL
     cmpeqi t0, a0, rotR
-    bne t0, zero, act_rotate
+    bne t0, zero, act_rotateR
 
     cmpeqi t0, a0, reset
     bne t0, zero, act_reset
@@ -552,23 +552,79 @@ act:
     act_move:
     ; TODO: Move
 
-    ; TODO: Test collision in direction choosen and if success then move tx, ty
-    ; othw return 1
 
-    act_rotate:
-    ; TODO: Rotate
+    ; TODO: Test collision in direction choosen and if success then move tx, ty
+    act_moveW:
+    addi a0, zero, W_COL
+    call detect_collision 
+    beq v0, a0, act_fail  ; if v0 = a0 there is a collision -> v0 will be set to 1
+    ldw t1, T_X(zero)     ; get the current value of T_X
+    addi t1, t1, -1       ; decrement the x cordinate
+    stw T_Y(zero), t1     ; store the new cordinate
+    br act_success
+
+    act_moveE:
+    addi a0, zero, E_COL
+    call detect_collision 
+    beq v0, a0, act_fail  ; if v0 = a0 there is a collision -> v0 will be set to 1
+    ldw t1, T_Y(zero)     ; get the current value of T_X
+    addi t1, t1, 1        ; increment the y cordinate
+    stw T_Y(zero), t1     ; store the new cordinate
+    br act_success
+
+    act_moveSo:
+    addi a0, zero, So_COL
+    call detect_collision 
+    beq v0, a0, act_fail  ; if v0 = a0 there is a collision -> v0 will be set to 1
+    ldw t1, T_Y(zero)     ; get the current value of T_Y
+    addi t1, t1, -1       ; decrement the y cordinate
+    stw T_Y(zero), t1     ; store the new cordinate
+    br act_success
+
+    act_rotateL:
+    addi a0, zero, rotL
+    call rotate_tetrominoe
+    addi a0, zero, OVERLAP
+    call detect_collision 
+    beq v0, a0, act_overlapL  ; if v0 = a0 there is an overlap -> we have to check more cases
+    br success                ; else SUCCESS
+
+    act_rotateR:
+    addi a0, zero, rotR
+    call rotate_tetrominoe
+    addi a0, zero, OVERLAP
+    call detect_collision 
+    beq v0, a0, act_overlapR  ; if v0 = a0 there is an overlap -> we have to check more cases
+    br success                ; else SUCCESS
+
+    act_overlapL:
+    ; TODO: Loop for 2 itteration
+    ; each iteration re-check if an overlap exist 
+    ; if overal still exist -> try to shift tetromino to the center
+    ; else no problem -> SUCCESS
+    ; at the end of the loop -> reset T_ORIENTATION 
+    ; then goto to act_fail
+
+
+    act_overlapR:
+
 
     act_reset:
     call reset
-    ; TODO: Reset
+    br act_end
 
+    act_success:
+    add v0, zero, zero
+    br act_end
+
+    act_fail:
+    addi v0, zero, 1
+    br act_end
 
     act_end:
-
     ; Restore ra
     ldw ra, 0(sp)
     addi sp, sp, 4
-
     ret
 ; END:act
 

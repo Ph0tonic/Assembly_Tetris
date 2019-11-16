@@ -725,6 +725,22 @@ detect_full_line:
 ; BEGIN:remove_full_line
 remove_full_line:
 
+    ; TODO: Remove pixel in the line y
+
+    ; Blinking sequence
+    call clear_leds
+    call wait
+    call draw_gsa
+    call wait
+    call clear_leds
+    call wait
+    call draw_gsa
+    call wait
+    call clear_leds
+    call wait
+    
+    ; TODO: Move pixel above y line one pixel down
+    
     ret
 ; END:remove_full_line
 

@@ -529,8 +529,14 @@ act:
     ; Params: a0 -> action
     ; Return: v0 -> 0 if succeeded otherwise 1
     ; Saving ra register
-    addi sp, sp, -4
+    addi sp, sp, -20
     stw ra, 0(sp)
+    addi t1, zero, T_ORIENTATION(zero)
+    stw t1, 4(sp)
+    addi t1, zero, T_X(zero)
+    stw t1, 8(sp)
+    addi t1, zero, T_Y(zero)
+    stw t1, 16(sp)
 
     cmpeqi t0, a0, moveL
     bne t0, zero, act_moveW
@@ -570,6 +576,8 @@ act:
     ldw t1, T_Y(zero)     ; get the current value of T_X
     addi t1, t1, 1        ; increment the y cordinate
     stw T_Y(zero), t1     ; store the new cordinate
+    addi t1, zero, t1
+    beq t9, t1, act_overlapL
     br act_success
 
     act_moveSo:
@@ -598,12 +606,45 @@ act:
     br success                ; else SUCCESS
 
     act_overlapL:
+    addi t1, zero, X_LIMIT
+    addi t8, zero, 0
+    addi t7, zero, 3
+    srl t1, t1, 1
+    act_overlap_loop:
+    addi t8, t8, 1
+    add t2, zero, T_X(zero)
+    
+    bge t2, t1, big_part_of_table 
+    blt t2, zero, act_fail        ; will never be raised
+    addi t9, zero, 1              ; flag
+    addi a0, zero, W_COL
+    call detect_collision 
+    addi a0, zero, NONE
+    beq v0, a0, act_moveW
+    br act_moveE
+    big_part_of_table:
+    addi t1, zero, X_LIMIT
+    blt t1, t2, act_fail          ; will never be raised
+    addi t9, zero, 1              ; flag
+    addi a0, zero, E_COL
+    call detect_collision 
+    addi a0, zero, NONE
+    beq v0, a0, act_moveE
+    br act_moveW
+
+    act_overlap_loop_condition:
+    blt t8, t7, act_overlap_loop
+    br end;
+
+
     ; TODO: Loop for 2 itteration
     ; each iteration re-check if an overlap exist 
     ; if overal still exist -> try to shift tetromino to the center
     ; else no problem -> SUCCESS
     ; at the end of the loop -> reset T_ORIENTATION 
     ; then goto to act_fail
+
+    big_part_of_table:
 
 
     act_overlapR:

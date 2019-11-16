@@ -782,7 +782,61 @@ increment_score:
 
 ; BEGIN:display_score
 display_score:
-    ; TODO: Display score
+    ; Counter
+    ldw t0, SCORE(zero) ; Units
+    add t1, zero, zero ; Decades
+    add t2, zero, zero ; Hundreds
+
+    addi t5, zero, 100
+    addi t6, zero, 10
+
+    display_score_100_loop:
+    sub t0, t0, t5
+
+    blt t0, zero, end_100_loop:
+
+    addi t2, t2, 1
+    br display_score_100_loop
+
+    end_100_loop:
+    add t0, t0, t5
+
+    display_score_10_loop:
+    sub t0, t0, t6
+
+    blt t0, zero, end_10_loop:
+
+    addi t1, t1, 1
+    br display_score_10_loop
+
+    end_10_loop:
+    add t0, t0, t6
+
+    ; Units left are in t0
+
+    ; Store unites
+    slli t0, t0, 2
+    lwd t3, font_data(t0)
+    addi t4, zero, 12
+    stw t3, SEVEN_SEGS(t4)
+
+    ; Store decades
+    slli t1, t1, 2
+    lwd t3, font_data(t1)
+    addi t4, zero, 8
+    stw t3, SEVEN_SEGS(t4)
+
+    ; Store hundred
+    slli t2, t2, 2
+    lwd t3, font_data(t2)
+    addi t4, zero, 4
+    stw t3, SEVEN_SEGS(t4)
+
+    ; Store thousands (always zero)
+    lwd t3, font_data(zero)
+    addi t4, zero, 0
+    stw t3, SEVEN_SEGS(t4)
+
     ret
 ; END:display_score
 

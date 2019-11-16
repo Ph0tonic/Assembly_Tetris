@@ -65,7 +65,7 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
-; BEGIN:main
+; BEGIN:temp
 main:
     ; init stack pointer
     addi sp, zero, STACK
@@ -151,6 +151,101 @@ main:
     ; call draw_gsa
     call wait
     call end
+
+; END:temp
+
+
+; BEGIN:main
+main:
+    ; Init section
+    addi sp, zero, STACK
+    addi s0, s0, RATE ; RATE Store in s0
+    call reset_game
+
+    main_loop:
+        main_falling_loop:
+            addi s1, zero, zero
+            
+            main_event_rate:
+            ; while i < RATE do
+            bge s1, s0, main_event_rate_end
+
+                ; draw the GSA on the leds and display the score
+                call draw_gsa
+                call display_score
+
+                ; remove the falling tetromino from the GSA, not from the tetromino structure
+                addi a0, zero, NOTHING
+                call draw_tetromino
+                
+                ; wait approximately 0.2 s
+                call wait
+
+                ; get the button input
+                call get_input
+                ; if a button has been pressed, try to do the required action, if possible (act, etc...)
+                add a0, v0, zero
+                call act
+
+                ; redraw the falling tetromino on the GSA
+                addi a0, zero, FALLING
+                call draw_tetromino
+            
+            br main_event_rate
+            main_event_rate_end:
+
+            ; remove the falling tetromino from the GSA, not from the tetromino structure
+            addi a0, zero, NOTHING
+            call draw_tetromino
+
+            ; try to move the falling tetromino down
+            addi a0, zero, moveD
+            call act
+            add s2, v0, zero
+
+            ; redraw the falling tetromino on the GSA
+            addi a0, zero, FALLING
+            call draw_tetromino
+        ; until falling tetromino can’t be drawn when moving down
+        beq zero, s2, main_falling_loop
+
+        ; replace the falling tetromino by a placed tetromino
+        addi a0, zero, PLACED
+        call draw_tetromino
+        
+        addi s3, zero, Y_LIMIT
+
+        ; while a full line do
+        main_detect_full_line:
+        call detect_full_line
+        bne v0, s3, main_detect_full_line_end
+        
+            ; remove the bottommost full line
+            add a0, v0, zero
+            call remove_full_line
+        
+        br main_detect_full_line
+        main_detect_full_line_end:
+
+        ; generate a new tetromino
+        call generate_tetrominoe
+
+        ; detect for overlaping collisions
+        addi a0, zero, OVERLAP
+        call detect_collision
+        
+        add s2, v0, zero
+        bne zero, s2, main_draw_tetromino_zap
+        
+        ; if no collisions then draw the falling tetromino on the GSA end
+        addi a0, zero, FALLING
+        call draw_tetromino
+
+        main_draw_tetromino_zap:
+
+    ; until newly generated falling tetromino overlaps with something
+    beq s2, zero, main_loop
+    br end
 
 ; END:main
 

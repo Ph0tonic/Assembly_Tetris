@@ -618,9 +618,6 @@ reset_game:
     ; Saving ra register
     addi sp, sp, -4
     stw ra, 0(sp)
-    
-    ; Game score set to zero
-    stw zero, SCORE(zero)
 
     ; New tetrominoe generated
     call generate_tetrominoe
@@ -631,6 +628,9 @@ reset_game:
     ; Reset the leds accordingly to GSA
     call draw_gsa
 
+    ; Game score set to zero
+    stw zero, SCORE(zero)
+    
     ; Reset score counter leds
     call display_score
 

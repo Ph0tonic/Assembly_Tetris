@@ -1,69 +1,69 @@
-  ;; game state memory location
-  .equ T_X, 0x1000                  ; falling tetrominoe position on x
-  .equ T_Y, 0x1004                  ; falling tetrominoe position on y
-  .equ T_type, 0x1008               ; falling tetrominoe type
-  .equ T_orientation, 0x100C        ; falling tetrominoe orientation
-  .equ SCORE,  0x1010               ; score
-  .equ GSA, 0x1014                  ; Game State Array starting address
-  .equ SEVEN_SEGS, 0x1198           ; 7-segment display addresses
-  .equ LEDS, 0x2000                 ; LED address
-  .equ RANDOM_NUM, 0x2010           ; Random number generator address
-  .equ BUTTONS, 0x2030              ; Buttons addresses
+; game state memory location
+.equ T_X, 0x1000                  ; falling tetrominoe position on x
+.equ T_Y, 0x1004                  ; falling tetrominoe position on y
+.equ T_type, 0x1008               ; falling tetrominoe type
+.equ T_orientation, 0x100C        ; falling tetrominoe orientation
+.equ SCORE,  0x1010               ; score
+.equ GSA, 0x1014                  ; Game State Array starting address
+.equ SEVEN_SEGS, 0x1198           ; 7-segment display addresses
+.equ LEDS, 0x2000                 ; LED address
+.equ RANDOM_NUM, 0x2010           ; Random number generator address
+.equ BUTTONS, 0x2030              ; Buttons addresses
 
-  .equ STACK, 0x2000
+.equ STACK, 0x2000
 
-  ;; type enumeration
-  .equ C, 0x00
-  .equ B, 0x01
-  .equ T, 0x02
-  .equ S, 0x03
-  .equ L, 0x04
+; type enumeration
+.equ C, 0x00
+.equ B, 0x01
+.equ T, 0x02
+.equ S, 0x03
+.equ L, 0x04
 
-  ;; GSA type
-  .equ NOTHING, 0x0
-  .equ PLACED, 0x1
-  .equ FALLING, 0x2
+; GSA type
+.equ NOTHING, 0x0
+.equ PLACED, 0x1
+.equ FALLING, 0x2
 
-  ;; orientation enumeration
-  .equ N, 0
-  .equ E, 1
-  .equ So, 2
-  .equ W, 3
-  .equ ORIENTATION_END, 4
+; orientation enumeration
+.equ N, 0
+.equ E, 1
+.equ So, 2
+.equ W, 3
+.equ ORIENTATION_END, 4
 
-  ;; collision boundaries
-  .equ COL_X, 4
-  .equ COL_Y, 3
+; collision boundaries
+.equ COL_X, 4
+.equ COL_Y, 3
 
-  ;; Rotation enumeration
-  .equ CLOCKWISE, 0
-  .equ COUNTERCLOCKWISE, 1
+; Rotation enumeration
+.equ CLOCKWISE, 0
+.equ COUNTERCLOCKWISE, 1
 
-  ;; Button enumeration
-  .equ moveL, 0x01
-  .equ rotL, 0x02
-  .equ reset, 0x04
-  .equ rotR, 0x08
-  .equ moveR, 0x10
-  .equ moveD, 0x20
+; Button enumeration
+.equ moveL, 0x01
+.equ rotL, 0x02
+.equ reset, 0x04
+.equ rotR, 0x08
+.equ moveR, 0x10
+.equ moveD, 0x20
 
-  ;; Collision return ENUM
-  .equ W_COL, 0
-  .equ E_COL, 1
-  .equ So_COL, 2
-  .equ OVERLAP, 3
-  .equ NONE, 4
+; Collision return ENUM
+.equ W_COL, 0
+.equ E_COL, 1
+.equ So_COL, 2
+.equ OVERLAP, 3
+.equ NONE, 4
 
-  ;; start location
-  .equ START_X, 6
-  .equ START_Y, 1
+; start location
+.equ START_X, 6
+.equ START_Y, 1
 
-  ;; game rate of tetrominoe falling down (in terms of game loop iteration)
-  .equ RATE, 5
+; game rate of tetrominoe falling down (in terms of game loop iteration)
+.equ RATE, 5
 
-  ;; standard limits
-  .equ X_LIMIT, 12
-  .equ Y_LIMIT, 8
+; standard limits
+.equ X_LIMIT, 12
+.equ Y_LIMIT, 8
 
 ; BEGIN:main
 main:
@@ -73,12 +73,12 @@ main:
     call clear_leds
 
     call generate_tetrominoe
-;    call wait
+    ; call wait
 
-;	call wait
+    ; call wait
     call rotate_tetrominoe
 
-;	call wait
+    ; call wait
 	addi a0, zero, rotL
 
     call rotate_tetrominoe
@@ -250,43 +250,6 @@ set_gsa:
     stw a2, GSA(t7)
     ret
 ; END:set_gsa
-
-; BEGIN:reset_gsa
-reset_gsa:
-    ; Saving ra register
-    addi sp, sp, -16
-    stw ra, 0(sp)
-    stw a0, 4(sp)
-    stw a1, 8(sp)
-    stw a2, 12(sp)
-
-    addi t0, zero, X_LIMIT
-    addi t1, zero, Y_LIMIT
-
-    addi a2, zero, Empty
-
-    stw a0, zero, zero
-    reset_game_empty_x:
-    stw a1, zero, zero
-
-    reset_game_empty_y:
-    call set_gsa
-
-    addi a1, a1, 1 
-    blt a1, t1, reset_game_empty_y
-
-    addi a0, a0, 1
-    blt a0, t0, reset_game_empty_x
-
-    ; Restore ra
-    ldw ra, 0(sp)
-    ldw a0, 4(sp)
-    ldw a1, 8(sp)
-    ldw a2, 12(sp)
-    addi sp, sp, 16
-
-    ret
-; END:reset_gsa
 
 ; BEGIN:draw_gsa
 draw_gsa:
@@ -523,7 +486,6 @@ detect_collision:
     ret
 ; END:detect_collision
 
-
 ; BEGIN:act
 act:
     ; Params: a0 -> action
@@ -724,23 +686,79 @@ detect_full_line:
 
 ; BEGIN:remove_full_line
 remove_full_line:
+    ; Param a0: y-coordinate of the full line to be removed
 
-    ; TODO: Remove pixel in the line y
+    ; Saving ra register
+    addi sp, sp, -8
+    stw ra, 0(sp)
+    stw s0, 4(sp)
 
-    ; Blinking sequence
-    call clear_leds
-    call wait
+    ; BLINKING SEQUENCE
+    ; Remove line
+    add a1, a0, zero
+    addi a2, zero, NOTHING
+    call set_line
+
     call draw_gsa
     call wait
-    call clear_leds
-    call wait
+    
+    ; Display line
+    add a1, a0, zero
+    addi a2, zero, PLACED
+    call set_line
+
     call draw_gsa
     call wait
+
+    ; Remove line
+    add a1, a0, zero
+    addi a2, zero, NOTHING
+    call set_line
+
     call clear_leds
     call wait
     
-    ; TODO: Move pixel above y line one pixel down
-    
+    ; Display line
+    add a1, a0, zero
+    addi a2, zero, PLACED
+    call set_line
+
+    call clear_leds
+    call wait
+
+    ; Remove line
+    add a1, a0, zero
+    addi a2, zero, NOTHING
+    call set_line
+
+    call clear_leds
+    call wait
+
+    ; Move pixel above y line one pixel down
+    ; Y index iis in a1
+    remove_line_loop_y:
+
+    addi a0, zero, X_LIMIT
+    remove_line_loop_x:
+    addi a0, a0, -1
+
+    ; Set value
+    call get_gsa
+    addi a1, a1, -1
+    add a2, v0, zero
+    call set_gsa
+    addi a1, a1, 1
+
+    bne zero, a0, remove_line_loop_x
+
+    addi a1, a1, -1
+    bne a1, zero, remove_line_loop_y
+
+    ; Restore registers
+    ldw ra, 0(sp)
+    ldw s0, 4(sp)
+    addi sp, sp, 8
+
     ret
 ; END:remove_full_line
 
@@ -767,6 +785,64 @@ display_score:
     ; TODO: Display score
     ret
 ; END:display_score
+
+; BEGIN:helper
+set_line:
+    ; Saving ra register
+    ; a1 indice y
+    ; a2 value
+    addi sp, sp, -4
+    stw ra, 0(sp)
+
+    addi a0, zero, X_LIMIT
+    
+    set_line_x:
+    addi a0, a0, -1
+    call set_gsa
+
+    ; Iterate over the line
+    bne a0, zero, set_line_x
+
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+
+    ret
+
+reset_gsa:
+    ; Saving ra register
+    addi sp, sp, -16
+    stw ra, 0(sp)
+    stw a0, 4(sp)
+    stw a1, 8(sp)
+    stw a2, 12(sp)
+
+    addi t0, zero, X_LIMIT
+    addi t1, zero, Y_LIMIT
+
+    addi a2, zero, Empty
+
+    stw a0, zero, zero
+    reset_game_empty_x:
+    stw a1, zero, zero
+
+    reset_game_empty_y:
+    call set_gsa
+
+    addi a1, a1, 1 
+    blt a1, t1, reset_game_empty_y
+
+    addi a0, a0, 1
+    blt a0, t0, reset_game_empty_x
+
+    ; Restore ra
+    ldw ra, 0(sp)
+    ldw a0, 4(sp)
+    ldw a1, 8(sp)
+    ldw a2, 12(sp)
+    addi sp, sp, 16
+
+    ret
+; END:helper
 
 font_data:
   .word 0xFC  ; 0

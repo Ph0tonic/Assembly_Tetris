@@ -65,6 +65,8 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
+br main
+
 ; BEGIN:temp
 main_temp:
     ; init stack pointer
@@ -171,6 +173,9 @@ main:
             bge s1, s0, main_event_rate_end
 
                 ; draw the GSA on the leds and display the score
+                addi a0, zero, FALLING
+                call draw_tetromino
+
                 call draw_gsa
                 call display_score
 
@@ -727,6 +732,10 @@ reset_game:
     
     ; Reset score counter leds
     call display_score
+
+    ; Restore return address
+    ldw ra, 0(sp)
+    addi sp, sp, 4
 
     ret
 ; END:reset_game

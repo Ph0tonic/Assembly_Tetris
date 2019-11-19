@@ -66,7 +66,7 @@
 .equ Y_LIMIT, 8
 
 ; BEGIN:temp
-main:
+main_temp:
     ; init stack pointer
     addi sp, zero, STACK
 
@@ -164,7 +164,7 @@ main:
 
     main_loop:
         main_falling_loop:
-            addi s1, zero, zero
+            add s1, zero, zero
             
             main_event_rate:
             ; while i < RATE do
@@ -348,7 +348,6 @@ set_gsa:
 
 ; BEGIN:draw_gsa
 draw_gsa:
-    ; TODO: Comments for labels
     
     addi sp, sp, -4
     stw ra, 0(sp)
@@ -700,7 +699,7 @@ get_input:
     addi v0, zero, moveR
     bne v0, zero, get_input_end
 
-    addi v0, zero, zero
+    add v0, zero, zero
 
     get_input_end:
     stw zero, BUTTONS(t0)
@@ -745,7 +744,7 @@ detect_full_line:
     addi t0, t0, -1
     blt t0, zero, full_line_none
 
-    addi t1, zero, x_LIMIT
+    addi t1, zero, X_LIMIT
     
     detect_full_line_x:
     addi t1, t1, -1
@@ -888,7 +887,7 @@ display_score:
     display_score_100_loop:
     sub t0, t0, t5
 
-    blt t0, zero, end_100_loop:
+    blt t0, zero, end_100_loop
 
     addi t2, t2, 1
     br display_score_100_loop
@@ -899,7 +898,7 @@ display_score:
     display_score_10_loop:
     sub t0, t0, t6
 
-    blt t0, zero, end_10_loop:
+    blt t0, zero, end_10_loop
 
     addi t1, t1, 1
     br display_score_10_loop
@@ -911,24 +910,24 @@ display_score:
 
     ; Store unites
     slli t0, t0, 2
-    lwd t3, font_data(t0)
+    ldw t3, font_data(t0)
     addi t4, zero, 12
     stw t3, SEVEN_SEGS(t4)
 
     ; Store decades
     slli t1, t1, 2
-    lwd t3, font_data(t1)
+    ldw t3, font_data(t1)
     addi t4, zero, 8
     stw t3, SEVEN_SEGS(t4)
 
     ; Store hundred
     slli t2, t2, 2
-    lwd t3, font_data(t2)
+    ldw t3, font_data(t2)
     addi t4, zero, 4
     stw t3, SEVEN_SEGS(t4)
 
     ; Store thousands (always zero)
-    lwd t3, font_data(zero)
+    ldw t3, font_data(zero)
     addi t4, zero, 0
     stw t3, SEVEN_SEGS(t4)
 
@@ -968,11 +967,11 @@ reset_gsa:
     addi t0, zero, X_LIMIT
     addi t1, zero, Y_LIMIT
 
-    addi a2, zero, Empty
+    addi a2, zero, NOTHING
 
-    stw a0, zero, zero
+    add a0, zero, zero
     reset_game_empty_x:
-    stw a1, zero, zero
+    add a1, zero, zero
 
     reset_game_empty_y:
     call set_gsa

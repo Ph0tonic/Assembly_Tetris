@@ -10,8 +10,6 @@
 .equ RANDOM_NUM, 0x2010           ; Random number generator address
 .equ BUTTONS, 0x2030              ; Buttons addresses
 
-.equ STACK, 0x2000
-
 ; type enumeration
 .equ C, 0x00
 .equ B, 0x01
@@ -133,7 +131,7 @@ main:
         ; while a full line do
         main_detect_full_line:
         call detect_full_line
-        bne v0, s3, main_detect_full_line_end
+        beq v0, s3, main_detect_full_line_end
         
             ; remove the bottommost full line
             add a0, v0, zero
@@ -143,14 +141,15 @@ main:
         main_detect_full_line_end:
 
         ; generate a new tetromino
-        call generate_tetrominoe
+        call generate_tetromino
 
         ; detect for overlaping collisions
         addi a0, zero, OVERLAP
         call detect_collision
         
         add s2, v0, zero
-        bne zero, s2, main_draw_tetromino_zap
+        addi s4, zero, NONE
+        bne s4, s2, main_draw_tetromino_zap
         
         ; if no collisions then draw the falling tetromino on the GSA end
         addi a0, zero, FALLING
@@ -159,7 +158,7 @@ main:
         main_draw_tetromino_zap:
 
     ; until newly generated falling tetromino overlaps with something
-    beq s2, zero, main_loop
+    beq s2, s4, main_loop
     br end
 
 ; END:main
@@ -191,7 +190,8 @@ set_pixel:
     ; Calculate a shit of n bytes which will be applied to the mask
     andi t3, a0, 3 ; get last two significants bits of x
     addi t2, zero, 8; Calculate shift of bytes
-    mul t2, t2, t3
+    slli t2, t3, 3
+    ;mul t2, t2, t3
 
     rol t0, t0, t2
 
@@ -208,9 +208,10 @@ set_pixel:
 ; END:set_pixel
 
 ; BEGIN:wait
-wait:    
-    ;addi t0, zero, 1048576 ; 2^20
-    addi t0, zero, 256 ; 2^10 for simulation
+wait:
+    addi t0, zero, 1
+    slli t0, t0, 20
+    ;addi t0, zero, 256 ; 2^10 for simulation
     add t1, zero, zero ; initialize loop variable to 0
 
     wait_loop:
@@ -366,8 +367,8 @@ draw_tetromino:
     ret
 ; END:draw_tetromino
 
-; BEGIN:generate_tetrominoe
-generate_tetrominoe:
+; BEGIN:generate_tetromino
+generate_tetromino:
     addi t0, zero, START_X
     stw t0, T_X(zero)
 
@@ -390,7 +391,7 @@ generate_tetrominoe:
     stw t0, T_type(zero)
 
     ret
-; END:generate_tetrominoe
+; END:generate_tetromino
 
 ; BEGIN:detect_collision
 detect_collision:
@@ -587,13 +588,13 @@ act:
     ; Try to move left or right
     act_rotateL:
     addi a0, zero, rotL
-    call rotate_tetrominoe
+    call rotate_tetromino
     br act_overlap
     
     ; Try to move left or right
     act_rotateR:
     addi a0, zero, rotR
-    call rotate_tetrominoe
+    call rotate_tetromino
     br act_overlap
     
     act_overlap:
@@ -673,8 +674,8 @@ act:
     ret
 ; END:act
 
-; BEGIN:rotate_tetrominoe
-rotate_tetrominoe:
+; BEGIN:rotate_tetromino
+rotate_tetromino:
     ; if a0 = rotL
     addi t0, zero, rotL
     beq a0, t0, rotL_label
@@ -717,7 +718,7 @@ rotate_tetrominoe:
     stw t0, T_orientation(zero) ; save the new position (t0) in the memory
 
     ret
-; END:rotate_tetrominoe
+; END:rotate_tetromino
 
 ; BEGIN:get_input
 get_input:
@@ -759,7 +760,7 @@ reset_game:
     stw ra, 0(sp)
 
     ; New tetrominoe generated
-    call generate_tetrominoe
+    call generate_tetromino
 
     ; Empty GSA
     call reset_gsa
@@ -824,7 +825,6 @@ detect_full_line:
 
     addi v0, zero, Y_LIMIT
     ret
-
 ; END:detect_full_line
 
 ; BEGIN:remove_full_line
@@ -840,7 +840,7 @@ remove_full_line:
     ; Remove line
     add a1, a0, zero
     addi a2, zero, NOTHING
-    call set_line
+    call set_line_value
 
     call draw_gsa
     call wait
@@ -848,7 +848,7 @@ remove_full_line:
     ; Display line
     add a1, a0, zero
     addi a2, zero, PLACED
-    call set_line
+    call set_line_value
 
     call draw_gsa
     call wait
@@ -856,7 +856,7 @@ remove_full_line:
     ; Remove line
     add a1, a0, zero
     addi a2, zero, NOTHING
-    call set_line
+    call set_line_value
 
     call clear_leds
     call wait
@@ -864,7 +864,7 @@ remove_full_line:
     ; Display line
     add a1, a0, zero
     addi a2, zero, PLACED
-    call set_line
+    call set_line_value
 
     call clear_leds
     call wait
@@ -872,7 +872,7 @@ remove_full_line:
     ; Remove line
     add a1, a0, zero
     addi a2, zero, NOTHING
-    call set_line
+    call set_line_value
 
     call clear_leds
     call wait
@@ -897,6 +897,9 @@ remove_full_line:
     addi a1, a1, -1
     bne a1, zero, remove_line_loop_y
 
+    call increment_score
+    call display_score
+
     ; Restore registers
     ldw ra, 0(sp)
     ldw s0, 4(sp)
@@ -912,7 +915,7 @@ increment_score:
 
     ; Check for max value (999)
     addi t1, zero, 10000
-    blt t0, t1, increment_score
+    blt t0, t1, increment_score_set
 
     ; Reset score to zero
     add t0, zero, zero
@@ -998,7 +1001,10 @@ display_score:
 ; END:display_score
 
 ; BEGIN:helper
-set_line:
+
+.equ STACK, 0x2000
+
+set_line_value:
     ; Saving ra register
     ; a1 indice y
     ; a2 value
@@ -1007,12 +1013,12 @@ set_line:
 
     addi a0, zero, X_LIMIT
     
-    set_line_x:
+    set_line_value_x:
     addi a0, a0, -1
     call set_gsa
 
     ; Iterate over the line
-    bne a0, zero, set_line_x
+    bne a0, zero, set_line_value_x
 
     ldw ra, 0(sp)
     addi sp, sp, 4

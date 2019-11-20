@@ -408,6 +408,8 @@ draw_gsa:
     addi sp, sp, -4
     stw ra, 0(sp)
     
+    call clear_leds
+    
     addi t5, zero, X_LIMIT
     draw_gsa_outer_loop:
     addi t5, t5, -1
@@ -653,24 +655,22 @@ act:
     ; Params: a0 -> action
     ; Return: v0 -> 0 if succeeded otherwise 1
     ; Saving ra register
-    addi sp, sp, -16                    
+    addi sp, sp, -40
     stw ra, 0(sp)
+    stw s0, 4(sp)
+    stw s1, 8(sp)
+    stw s2, 12(sp)
+    stw s3, 16(sp)
+    stw s4, 20(sp)
+    stw s5, 24(sp)
+    
     ; Save tetromino data on stack in the case of we need to restore it if this function fails
     ldw t1, T_orientation(zero)
-    stw t1, 4(sp)
+    stw t1, 28(sp)
     ldw t1, T_X(zero)
-    stw t1, 8(sp)
+    stw t1, 32(sp)
     ldw t1, T_Y(zero)
-    stw t1, 12(sp)
-
-    ; Saving sa register
-    addi sp, sp, -24
-    stw s0, 0(sp)
-    stw s1, 4(sp)
-    stw s2, 8(sp)
-    stw s3, 12(sp)
-    stw s4, 16(sp)
-    stw s5, 20(sp)
+    stw t1, 36(sp)
 
     ; Test parameter to know wich collision is tested
     cmpeqi t0, a0, moveL
@@ -691,138 +691,96 @@ act:
     ; if the parameter doesnt match anything -> quit
     br act_end
 
-    ; TODO: Test collision in direction choosen and if success then move tx, ty
+    ; Test collision in direction choosen and if success then move tx, ty
     act_moveW:
     addi a0, zero, W_COL
     call detect_collision 
     beq v0, a0, act_fail      ; if v0 = a0 there is a collision -> v0 will be set to 1
-    ldw s1, T_X(zero)         ; get the current value of T_X
-    addi s1, s1, -1           ; decrement the x cordinate
     
-    addi sp, sp, -8
-    stw s1, 0(sp)
-    stw s6, 4(sp)
+    ldw t1, T_X(zero)         ; get the current value of T_X
+    addi t1, t1, -1           ; decrement the x cordinate
+    stw t1, T_X(zero)
 
-    addi a0, zero, OVERLAP
-    call detect_collision 
-    beq v0, a0, act_overlap  ; if v0 = a0 there is an overlap -> v0 will be set to 1, will never be raised
-    
-    ldw s1, 0(sp)
-    ldw s6, 4(sp)
-    addi sp, sp, 8
-
-    stw s1, T_Y(zero)         ; store the new cordinate
-    add s1, zero, s1
-    beq s6, s1, act_overlap  ; if we come from overlap, we need to go back down
     br act_success            ; else -> SUCCESS
 
     act_moveE:
     addi a0, zero, E_COL
     call detect_collision 
     beq v0, a0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
-    ldw s1, T_X(zero)                       ; get the current value of T_X
-    addi s1, s1, 1                          ; increment the x cordinate
-    ;stw s1, T_X(zero)                       ; store the new cordinate
-    ; Si je decommente le stw ca fonctionne car la position testée n'aura pas de voisin (pos_x+1)
-    ; s'il est commenteé (comme maintenant) le fait qu'il y ait des voisin en mode placed provoque un overlap alors qu'il n'y en a pas
-    
-    addi sp, sp, -8
-    stw s1, 0(sp)
-    stw s6, 4(sp)
-        
-    addi a0, zero, OVERLAP
-    call detect_collision      ;;;;;;;;;; Cette collision qui plante
-    addi t0, zero, OVERLAP         
-    beq v0, t0, act_overlap                ; if v0 = a0 there is an overlap -> v0 will be set to 1, will never be raised
-    
-    ldw s1, 0(sp)
-    ldw s6, 4(sp)
-    addi sp, sp, 8
 
-    stw s1, T_X(zero)                       ; store the new cordinate
-    add s1, zero, s1
-    beq s6, s1, act_overlap_loop_condition  ; if we come from overlap, we need to go back down
+    ldw t1, T_X(zero)                       ; get the current value of T_X
+    addi t1, t1, 1                          ; increment the x cordinate
+    stw t1, T_X(zero)
+
     br act_success                          ; else -> SUCCESS
 
     act_moveSo:
     addi a0, zero, So_COL
     call detect_collision 
     beq v0, a0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
-    ldw s1, T_Y(zero)                       ; get the current value of T_Y
-    addi s1, s1, 1                          ; decrement the y cordinate
 
-    addi sp, sp, -8
-    stw s1, 0(sp)
-    stw s6, 4(sp)
+    ldw t1, T_Y(zero)                       ; get the current value of T_Y
+    addi t1, t1, 1                          ; increment the y cordinate
+    stw t1, T_Y(zero)
 
-    call detect_collision               
-    beq v0, a0, act_overlap                ; if v0 = a0 there is an overlap -> v0 will be set to 1, will never be raised
-    
-    ldw s1, 0(sp)
-    ldw s6, 4(sp)
-    addi sp, sp, 8
-
-    stw s1, T_Y(zero)                		    ; store the new cordinate
-    add s1, zero, s1
-    beq s6, s1, act_overlap_loop_condition  ; if we come from overlap, we need to go back down
     br act_success                          ; else -> SUCCESS
 
+    ; Try to move left or right
     act_rotateL:
     addi a0, zero, rotL
     call rotate_tetrominoe
-    addi a0, zero, OVERLAP
-    call detect_collision 
-    beq v0, a0, act_overlap  ; if v0 = a0 there is an overlap -> we have to check more cases
-    br act_success                ; else -> SUCCESS
-
+    br act_overlap
+    
+    ; Try to move left or right
     act_rotateR:
     addi a0, zero, rotR
     call rotate_tetrominoe
-    addi a0, zero, OVERLAP
-    call detect_collision 
-    beq v0, a0, act_overlap  ; if v0 = a0 there is an overlap -> we have to check more cases
-    br act_success                ; else -> SUCCESS
-
+    br act_overlap
+    
     act_overlap:
-    addi t1, zero, X_LIMIT
-    addi t5, zero, 0              ; t5 will be used as loop counting variable
-    addi t7, zero, 3              ; t7 is the for loop linmit
-    srli t1, t1, 1                 ; t1 will store the size of the width / 2
+    addi a0, zero, OVERLAP
+    call detect_collision
+    addi t0, zero, NONE
+
+    beq v0, t0, act_success
+
+    ; Collision detected try to fix with a shift left or right
+    addi s0, zero, X_LIMIT
+    addi s1, zero, 2                ; Loop counting
+    
+    srli t0, t0, 1                ; Size / 2
+    ldw t1, T_X(zero)
+    ; s2 = 1 if left part otherwise right part
+    cmplt s2, t1, t2
+
     act_overlap_loop:
-    addi t5, t5, 1                ; increment t5
+    addi s1, s1, -1
 
-    addi a0, zero, OVERLAP          
-    call detect_collision         ; test if there is a an overlap
-    addi a0, zero, NONE   
-    beq v0, a0, act_success           ; if no overlap goto success
-
-	ldw t2, T_X(zero)       	  ; t2 = tetromino x position
-    bge t2, t1, big_part_of_table ; if t2 >= t1, we are in the high part of the table 
+    bne s2, zero, right_part_of_table
     
-    ; Small part of the table
-    blt t2, zero, act_fail        ; will never be raised
-    addi t6, zero, 1              ; flag
-    addi a0, zero, E_COL          
-    call detect_collision         ; test if there is a collision on the tetromino's east side
-    addi a0, zero, NONE         
-    beq v0, a0, act_moveE         ; if no collision move right
-    addi t6, zero, 0              ; reset flag
-    br act_moveW                  ; else TRY to move left, will fail if not possible
-    
-    big_part_of_table:
-    addi t1, zero, X_LIMIT
-    blt t1, t2, act_fail          ; will never be raised
-    addi t6, zero, 1              ; flag
-    addi a0, zero, W_COL        
-    call detect_collision         ; test if there is a collision on the tetromino's east side
-    addi a0, zero, NONE
-    beq v0, a0, act_moveW         ; if no collision move left
-    addi t6, zero, 0              ; reset flag
-    br act_moveW                  ; else TRY to move right, will fail if not possible
+    ; Left part of the table
+    ldw t1, T_X(zero)         ; get the current value of T_X
+    addi t1, t1, 1           ; decrement the x cordinate
+    stw t1, T_X(zero)
 
-    act_overlap_loop_condition:
-    blt t5, t7, act_overlap_loop
-    br end;
+    br act_overlap_loop_end
+    
+    ; Right part in the table
+    right_part_of_table:
+    ldw t1, T_X(zero)         ; get the current value of T_X
+    addi t1, t1, -1           ; decrement the x cordinate
+    stw t1, T_X(zero)
+
+    br act_overlap_loop_end
+
+    act_overlap_loop_end:
+    addi a0, zero, OVERLAP
+    call detect_collision
+    addi t0, zero, NONE
+
+    beq v0, t0, act_success
+    bne s1, zero, act_overlap_loop
+    br act_fail
 
     act_reset:
     call reset
@@ -832,36 +790,27 @@ act:
     add v0, zero, zero
     br act_end 
 
+    ; reset initial position values for tetromino
     act_fail:
     addi v0, zero, 1
-    br act_end
 
-    ; reset initial position values for tetromino
-    restore_initial_position:
-    ldw t1, 4(sp)
+    ldw t1, 28(sp)
     stw t1, T_orientation(zero)
-    ldw t1, 8(sp)
+    ldw t1, 32(sp)
     stw t1, T_X(zero)
-    ldw t1, 12(sp)
+    ldw t1, 36(sp)
     stw t1, T_Y(zero)
-    br act_exit
 
     act_end:
-    ldw s0, 0(sp)
-    ldw s1, 4(sp)
-    ldw s2, 8(sp)
-    ldw s3, 12(sp)
-    ldw s4, 16(sp)
-    ldw s5, 20(sp)
-    addi sp, sp, 24
-    
-    addi t0, zero, 1
-    beq v0, t0, restore_initial_position
-    
-    act_exit:
-    ; Restore ra
     ldw ra, 0(sp)
-    addi sp, sp, 16
+    ldw s0, 4(sp)
+    ldw s1, 8(sp)
+    ldw s2, 12(sp)
+    ldw s3, 16(sp)
+    ldw s4, 20(sp)
+    ldw s5, 24(sp)
+    addi sp, sp, 40
+    
     ret
 ; END:act
 

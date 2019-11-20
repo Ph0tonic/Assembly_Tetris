@@ -76,7 +76,6 @@ main_temp:
 	call draw_gsa
 
     call generate_tetrominoe
-
 ;    call wait
     addi a0, zero, 1
     addi a1, zero, 2
@@ -206,7 +205,6 @@ main_temp:
     call end
 
 ; END:temp
-
 
 ; BEGIN:main
 main:

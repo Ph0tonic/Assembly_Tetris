@@ -911,7 +911,7 @@ increment_score:
     addi t0, t0, 1
 
     ; Check for max value (999)
-    addi t1, zero, 1000
+    addi t1, zero, 10000
     blt t0, t1, increment_score
 
     ; Reset score to zero
@@ -929,10 +929,23 @@ display_score:
     ldw t0, SCORE(zero) ; Units
     add t1, zero, zero ; Decades
     add t2, zero, zero ; Hundreds
+    add t3, zero, zero ; Thousands
 
+    addi t4, zero, 1000
     addi t5, zero, 100
     addi t6, zero, 10
 
+    display_score_1000_loop:
+    sub t0, t0, t4
+
+    blt t0, zero, end_1000_loop
+
+    addi t3, t3, 1
+    br display_score_1000_loop
+
+    end_1000_loop:
+    add t0, t0, t4
+    
     display_score_100_loop:
     sub t0, t0, t5
 
@@ -959,26 +972,27 @@ display_score:
 
     ; Store unites
     slli t0, t0, 2
-    ldw t3, font_data(t0)
+    ldw t7, font_data(t0)
     addi t4, zero, 12
-    stw t3, SEVEN_SEGS(t4)
+    stw t7, SEVEN_SEGS(t4)
 
     ; Store decades
     slli t1, t1, 2
-    ldw t3, font_data(t1)
+    ldw t7, font_data(t1)
     addi t4, zero, 8
-    stw t3, SEVEN_SEGS(t4)
+    stw t7, SEVEN_SEGS(t4)
 
     ; Store hundred
     slli t2, t2, 2
-    ldw t3, font_data(t2)
+    ldw t7, font_data(t2)
     addi t4, zero, 4
-    stw t3, SEVEN_SEGS(t4)
+    stw t7, SEVEN_SEGS(t4)
 
     ; Store thousands (always zero)
-    ldw t3, font_data(zero)
+    slli t3, t3, 2
+    ldw t7, font_data(t3)
     addi t4, zero, 0
-    stw t3, SEVEN_SEGS(t4)
+    stw t7, SEVEN_SEGS(t4)
 
     ret
 ; END:display_score

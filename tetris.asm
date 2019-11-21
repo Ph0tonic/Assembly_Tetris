@@ -63,6 +63,53 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
+temp_main:
+    
+    ; Init section
+    addi sp, zero, STACK
+    addi s0, s0, RATE ; RATE Store in s0
+    call reset_game
+
+    
+    addi t1, zero, B
+    stw t1, T_type(zero)
+    
+    addi t1, zero, N
+    stw t1, T_orientation(zero)
+    
+    addi t1, zero, 5
+    stw t1, T_X(zero)
+
+    addi a0, zero, PLACED
+    call draw_tetromino
+
+    addi t1, zero, 1
+    stw t1, T_X(zero)
+
+    call draw_tetromino
+    
+    addi t1, zero, 9
+    stw t1, T_X(zero)
+
+    call draw_tetromino
+
+    addi t1, zero, 0
+    stw t1, T_Y(zero)
+    addi t1, zero, 4
+    stw t1, T_X(zero)
+
+    call draw_tetromino
+
+    call draw_gsa
+
+    call detect_full_line
+    add a0, v0, zero
+    call remove_full_line
+
+    call draw_gsa
+    
+    br end
+
 ; BEGIN:main
 main:
     ; Init section
@@ -210,8 +257,8 @@ set_pixel:
 ; BEGIN:wait
 wait:
     addi t0, zero, 1
-    slli t0, t0, 20
-    ;addi t0, zero, 256 ; 2^10 for simulation
+    ;slli t0, t0, 20 ; 2^20 for real
+    slli t0, t0, 10 ; 2^10 for simulation
     add t1, zero, zero ; initialize loop variable to 0
 
     wait_loop:
@@ -784,46 +831,60 @@ reset_game:
 ; BEGIN:detect_full_line
 detect_full_line:
     ; Saving ra register
-    addi sp, sp, -4
+    addi sp, sp, -20
     stw ra, 0(sp)
+    stw s0, 4(sp)
+    stw s1, 8(sp)
+    stw s2, 12(sp)
+    stw s3, 16(sp)
 
-    addi t3, zero, NOTHING
-    addi t0, zero, Y_LIMIT
+    addi s3, zero, NOTHING
+    addi s0, zero, -1
+    addi s2, zero, Y_LIMIT
 
     detect_full_line_y:
-    addi t0, t0, -1
-    blt t0, zero, full_line_none
+    addi s0, s0, 1
+    beq s0, s2, full_line_none
 
-    addi t1, zero, X_LIMIT
+    addi s1, zero, X_LIMIT
     
     detect_full_line_x:
-    addi t1, t1, -1
+    addi s1, s1, -1
 
-    add a0, t1, zero
-    add a1, t0, zero
-    call get_gsa
+    add a0, s1, zero
+    add a1, s0, zero
+    call get_gsa ; TODO: Improve without using get_gsa
 
     ; If empty start detection of a new line
-    beq v0, t3, detect_full_line_y
+    beq v0, s3, detect_full_line_y
 
     ; Iterate over the line if not empty
-    bne t1, zero, detect_full_line_x
+    bne s1, zero, detect_full_line_x
 
     ; Full line
     full_line_detected:
-    ldw ra, 0(sp)
-    addi sp, sp, 4
+    add v0, s0, zero
 
-    add v0, t0, zero
+    ldw ra, 0(sp)
+    ldw s0, 4(sp)
+    ldw s1, 8(sp)
+    ldw s2, 12(sp)
+    ldw s3, 16(sp)
+    addi sp, sp, 20
+
     ret
 
     full_line_none:
     ; Return no full line detected
+    addi v0, zero, Y_LIMIT
     
     ldw ra, 0(sp)
-    addi sp, sp, 4
+    ldw s0, 4(sp)
+    ldw s1, 8(sp)
+    ldw s2, 12(sp)
+    ldw s3, 16(sp)
+    addi sp, sp, 20
 
-    addi v0, zero, Y_LIMIT
     ret
 ; END:detect_full_line
 
@@ -832,13 +893,16 @@ remove_full_line:
     ; Param a0: y-coordinate of the full line to be removed
 
     ; Saving ra register
-    addi sp, sp, -8
+    addi sp, sp, -12
     stw ra, 0(sp)
     stw s0, 4(sp)
+    stw s0, 8(sp)
+
+    add s0, a0, zero
 
     ; BLINKING SEQUENCE
     ; Remove line
-    add a1, a0, zero
+    add a1, s0, zero
     addi a2, zero, NOTHING
     call set_line_value
 
@@ -846,7 +910,7 @@ remove_full_line:
     call wait
     
     ; Display line
-    add a1, a0, zero
+    add a1, s0, zero
     addi a2, zero, PLACED
     call set_line_value
 
@@ -854,48 +918,49 @@ remove_full_line:
     call wait
 
     ; Remove line
-    add a1, a0, zero
+    add a1, s0, zero
     addi a2, zero, NOTHING
     call set_line_value
 
-    call clear_leds
+    call draw_gsa
     call wait
     
     ; Display line
-    add a1, a0, zero
+    add a1, s0, zero
     addi a2, zero, PLACED
     call set_line_value
 
-    call clear_leds
+    call draw_gsa
     call wait
 
     ; Remove line
-    add a1, a0, zero
+    add a1, s0, zero
     addi a2, zero, NOTHING
     call set_line_value
 
-    call clear_leds
+    call draw_gsa
     call wait
 
     ; Move pixel above y line one pixel down
-    ; Y index iis in a1
+    ; Y index is in s0
     remove_line_loop_y:
 
-    addi a0, zero, X_LIMIT
+    addi s1, zero, X_LIMIT
     remove_line_loop_x:
-    addi a0, a0, -1
+    addi s1, s1, -1
 
     ; Set value
+    add a0, s1, zero
+    addi a1, s0, -1
     call get_gsa
-    addi a1, a1, -1
+    add a1, s0, zero
     add a2, v0, zero
     call set_gsa
-    addi a1, a1, 1
 
-    bne zero, a0, remove_line_loop_x
+    bne zero, s1, remove_line_loop_x
 
-    addi a1, a1, -1
-    bne a1, zero, remove_line_loop_y
+    addi s0, s0, -1
+    bne s0, zero, remove_line_loop_y
 
     call increment_score
     call display_score
@@ -903,7 +968,8 @@ remove_full_line:
     ; Restore registers
     ldw ra, 0(sp)
     ldw s0, 4(sp)
-    addi sp, sp, 8
+    ldw s1, 4(sp)
+    addi sp, sp, 12
 
     ret
 ; END:remove_full_line

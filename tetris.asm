@@ -63,53 +63,6 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
-temp_main:
-    
-    ; Init section
-    addi sp, zero, STACK
-    addi s0, s0, RATE ; RATE Store in s0
-    call reset_game
-
-    
-    addi t1, zero, B
-    stw t1, T_type(zero)
-    
-    addi t1, zero, N
-    stw t1, T_orientation(zero)
-    
-    addi t1, zero, 5
-    stw t1, T_X(zero)
-
-    addi a0, zero, PLACED
-    call draw_tetromino
-
-    addi t1, zero, 1
-    stw t1, T_X(zero)
-
-    call draw_tetromino
-    
-    addi t1, zero, 9
-    stw t1, T_X(zero)
-
-    call draw_tetromino
-
-    addi t1, zero, 0
-    stw t1, T_Y(zero)
-    addi t1, zero, 4
-    stw t1, T_X(zero)
-
-    call draw_tetromino
-
-    call draw_gsa
-
-    call detect_full_line
-    add a0, v0, zero
-    call remove_full_line
-
-    call draw_gsa
-    
-    br end
-
 ; BEGIN:main
 main:
     ; Init section
@@ -126,8 +79,8 @@ main:
             bge s1, s0, main_event_rate_end
 
                 ; draw the GSA on the leds and display the score
-                addi a0, zero, FALLING
-                call draw_tetromino
+                ; addi a0, zero, FALLING
+                ; call draw_tetromino
 
                 call draw_gsa
                 call display_score
@@ -690,8 +643,7 @@ act:
     br act_fail
 
     act_reset:
-    call reset
-    br act_end
+    call reset_game
 
     act_success:
     add v0, zero, zero

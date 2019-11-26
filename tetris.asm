@@ -63,6 +63,24 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
+; fake_main:
+;     addi sp, zero, STACK
+;     call reset_game
+
+;     addi t0, zero, 11
+;     stw t0, T_X(zero)
+
+;     addi t0, zero, B
+;     stw t0, T_type(zero)
+    
+;     addi t0, zero, W
+;     stw t0, T_orientation(zero)
+    
+;     addi a0, zero, rotR
+
+;     call act
+;     call wait
+
 ; BEGIN:main
 main:
     ; Init section
@@ -609,10 +627,10 @@ act:
     addi s0, zero, X_LIMIT
     addi s1, zero, 2                ; Loop counting
     
-    srli t0, t0, 1                ; Size / 2
-    ldw t1, T_X(zero)
+    srli s0, s0, 1                ; Size / 2
+    ldw s2, T_X(zero)
     ; s2 = 1 if left part otherwise right part
-    cmplt s2, t1, t2
+    cmplt s2, s0, s2
 
     act_overlap_loop:
     addi s1, s1, -1
@@ -676,7 +694,9 @@ act:
 
 ; BEGIN:rotate_tetromino
 rotate_tetromino:
+    ; FIXME: Make this simpler
     ; if a0 = rotL
+
     addi t0, zero, rotL
     beq a0, t0, rotL_label
 

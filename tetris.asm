@@ -67,16 +67,15 @@
 main:
     ; Init section
     addi sp, zero, STACK
-    addi s0, s0, RATE ; RATE Store in s0
     call reset_game
 
     main_loop:
         main_falling_loop:
-            add s1, zero, zero
+            addi s0, zero, RATE
             
             main_event_rate:
             ; while i < RATE do
-            bge s1, s0, main_event_rate_end
+            beq s0, zero, main_event_rate_end
 
                 ; draw the GSA on the leds and display the score
                 ; addi a0, zero, FALLING
@@ -103,7 +102,7 @@ main:
                 call draw_tetromino
 
                 ; increment s1
-                addi s1, s1, 1
+                addi s0, s0, -1
             br main_event_rate
             main_event_rate_end:
 
@@ -165,14 +164,18 @@ main:
 
 ; BEGIN:clear_leds
 clear_leds:
+; FIXME:
     ; set LED[x] to 0
+    ; stw zero, LEDS+0(zero)
+    ; stw zero, LEDS+4(zero)
+    ; stw zero, LEDS+8(zero)
     stw zero, LEDS(zero)
     
-    ; store 4 in t0 register
+    ; store 4 in t0 register       
     addi t0, zero, 4
     stw zero, LEDS(t0)
     
-    ; store 8 in t0 register
+    ; store 8 in t0 register       
     addi t0, zero, 8
     stw zero, LEDS(t0)
     ret
@@ -210,13 +213,12 @@ set_pixel:
 ; BEGIN:wait
 wait:
     addi t0, zero, 1
-    ;slli t0, t0, 20 ; 2^20 for real
-    slli t0, t0, 10 ; 2^10 for simulation
-    add t1, zero, zero ; initialize loop variable to 0
+    slli t0, t0, 20 ; 2^20 for real
+    ;slli t0, t0, 10 ; 2^10 for simulation
 
     wait_loop:
-    addi t1, t1, 1 
-    blt t1, t0, wait_loop
+    addi t0, t0, -1 
+    bne t0, zero, wait_loop
     ret
 ; END:wait
 
@@ -226,7 +228,6 @@ in_gsa:
     ;a1: pixel’s y-coordinate
     ;Return Value
     ;v0: 1 if out of GSA, 0 if in GSA
-    add v0, zero, zero
     cmpgei v0, a0, X_LIMIT
     cmpgei v1, a1, Y_LIMIT
     or v0, v0, v1
@@ -848,7 +849,7 @@ remove_full_line:
     addi sp, sp, -12
     stw ra, 0(sp)
     stw s0, 4(sp)
-    stw s0, 8(sp)
+    stw s1, 8(sp)
 
     add s0, a0, zero
 
@@ -920,7 +921,7 @@ remove_full_line:
     ; Restore registers
     ldw ra, 0(sp)
     ldw s0, 4(sp)
-    ldw s1, 4(sp)
+    ldw s1, 8(sp)
     addi sp, sp, 12
 
     ret
@@ -994,26 +995,22 @@ display_score:
     ; Store unites
     slli t0, t0, 2
     ldw t7, font_data(t0)
-    addi t4, zero, 12
-    stw t7, SEVEN_SEGS(t4)
+    stw t7, 12+SEVEN_SEGS(zero)
 
     ; Store decades
     slli t1, t1, 2
     ldw t7, font_data(t1)
-    addi t4, zero, 8
-    stw t7, SEVEN_SEGS(t4)
+    stw t7, 8+SEVEN_SEGS(zero)
 
     ; Store hundred
     slli t2, t2, 2
     ldw t7, font_data(t2)
-    addi t4, zero, 4
-    stw t7, SEVEN_SEGS(t4)
+    stw t7, 4+SEVEN_SEGS(zero)
 
     ; Store thousands (always zero)
     slli t3, t3, 2
     ldw t7, font_data(t3)
-    addi t4, zero, 0
-    stw t7, SEVEN_SEGS(t4)
+    stw t7, 0+SEVEN_SEGS(zero)
 
     ret
 ; END:display_score

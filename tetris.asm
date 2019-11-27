@@ -498,8 +498,8 @@ detect_collision:
     ; Detect collision of current tetromino part
     call get_gsa
     
-    addi t4, zero, NOTHING
-    bne v0, t4, detect_collision_colide   
+    addi t4, zero, PLACED
+    beq v0, t4, detect_collision_colide   
     
     detect_collision_zap:
 

@@ -68,25 +68,49 @@ main:
     ; Init section
     addi sp, zero, 0x2000
     call reset_game
+
+    addi a0, zero, NOTHING
+    call draw_tetromino
+
+    addi t0, zero, T
+    stw t0, T_type(zero)
     
-    addi a0, zero, 1
-    call remove_full_line
-    call draw_gsa
+    addi a0, zero, moveL
+    call act
+
+
+    addi t0, zero, B
+    stw t0, T_type(zero)
     
-    call remove_full_line
-    call draw_gsa
+    addi t0, zero, W
+    stw t0, T_orientation(zero)
     
-    call remove_full_line
-    call draw_gsa
+    addi t0, zero, 0
+    stw t0, T_Y(zero)
     
-    call remove_full_line
+    addi t0, zero, 7
+    stw t0, T_X(zero)
+
+    addi a0, zero, PLACED
+    call draw_tetromino
+
     call draw_gsa
+
+    addi t0, zero, T
+    stw t0, T_type(zero)
     
-    call remove_full_line
+    addi t0, zero, 11
+    stw t0, T_X(zero)
+
+    addi a0, zero, moveR
+    call act
+
+    addi a0, zero, FALLING
+    call draw_tetromino
+    error:
+
     call draw_gsa
-    
-    call remove_full_line
-    call draw_gsa
+    bne v0, zero, error 
 
     main_loop:
         main_falling_loop:
@@ -468,8 +492,8 @@ detect_collision:
     or v0, v0, v1
     bne v0, zero, detect_collision_colide
     
-    ; Check if 
-    blt a0, zero, detect_collision_zap
+    ; Check if above game area
+    blt a1, zero, detect_collision_zap
 
     ; Detect collision of current tetromino part
     call get_gsa
@@ -832,7 +856,7 @@ detect_full_line:
 
     add a0, s1, zero
     add a1, s0, zero
-    call get_gsa ; TODO: Improve without using get_gsa
+    call get_gsa
 
     ; If empty start detection of a new line
     bne v0, s3, detect_full_line_y
@@ -1077,7 +1101,7 @@ reset_gsa:
     stw a1, 8(sp)
     stw a2, 12(sp)
 
-    addi a2, zero, PLACED ; FIXME: For tests puproses only
+    addi a2, zero, NOTHING
 
     add a0, zero, zero
     reset_game_empty_x:

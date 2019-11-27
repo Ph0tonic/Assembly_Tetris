@@ -69,49 +69,6 @@ main:
     addi sp, zero, 0x2000
     call reset_game
 
-    addi a0, zero, NOTHING
-    call draw_tetromino
-
-    addi t0, zero, T
-    stw t0, T_type(zero)
-    
-    addi a0, zero, moveL
-    call act
-
-
-    addi t0, zero, B
-    stw t0, T_type(zero)
-    
-    addi t0, zero, W
-    stw t0, T_orientation(zero)
-    
-    addi t0, zero, 0
-    stw t0, T_Y(zero)
-    
-    addi t0, zero, 7
-    stw t0, T_X(zero)
-
-    addi a0, zero, PLACED
-    call draw_tetromino
-
-    call draw_gsa
-
-    addi t0, zero, T
-    stw t0, T_type(zero)
-    
-    addi t0, zero, 11
-    stw t0, T_X(zero)
-
-    addi a0, zero, moveR
-    call act
-
-    addi a0, zero, FALLING
-    call draw_tetromino
-    error:
-
-    call draw_gsa
-    bne v0, zero, error 
-
     main_loop:
         main_falling_loop:
             addi s0, zero, RATE
@@ -121,9 +78,6 @@ main:
             beq s0, zero, main_event_rate_end
 
                 ; draw the GSA on the leds and display the score
-                ;addi a0, zero, FALLING
-                ;call draw_tetromino
-
                 call draw_gsa
                 call display_score
 
@@ -245,7 +199,7 @@ set_pixel:
 ; BEGIN:wait
 wait:
     addi t0, zero, 1
-    ;slli t0, t0, 20 ; 2^20 for real ; FIXME: Uncomment!
+    slli t0, t0, 20 ; 2^20 for real ; FIXME: Uncomment!
     ;slli t0, t0, 10 ; 2^10 for simulation
 
     wait_loop:
@@ -441,25 +395,22 @@ detect_collision:
     ; v0 => return value, same as a0 if collision detected otherwise NONE
 
     ; Saving ra register
-    addi sp, sp, -8
-    stw ra, 4(sp)
-    stw a0, 0(sp)
-
-    ; Saving sa register
-    addi sp, sp, -32
-    stw s0, 0(sp)
-    stw s1, 4(sp)
-    stw s2, 8(sp)
-    stw s3, 12(sp)
-    stw s4, 16(sp)
-    stw s5, 20(sp)
-    stw s6, 24(sp)
-    stw s7, 28(sp)
+    addi sp, sp, -40
+    stw ra, 0(sp)
+    stw a0, 4(sp)
+    stw s0, 8(sp)
+    stw s1, 12(sp)
+    stw s2, 16(sp)
+    stw s3, 20(sp)
+    stw s4, 24(sp)
+    stw s5, 28(sp)
+    stw s6, 32(sp)
+    stw s7, 36(sp)
 
     ldw s0, T_X(zero)
     ldw s1, T_Y(zero)
-    ldw s2, T_orientation(zero)
-    ldw s3, T_type(zero)
+    ldw t2, T_orientation(zero)
+    ldw t3, T_type(zero)
 
     ; Config offset for collision detection
     cmpeqi s4, a0, E_COL
@@ -470,8 +421,8 @@ detect_collision:
     add s1, s1, s4
     
     ; Get coord values for tetromino
-    slli t5, s3, 2
-    add t5, t5, s2
+    slli t5, t3, 2
+    add t5, t5, t2
     slli t5, t5, 2
     ldw s6, DRAW_Ax(t5)
     ldw s7, DRAW_Ay(t5)
@@ -518,25 +469,22 @@ detect_collision:
     br detect_collision_end
 
     detect_collision_colide:
-    ldw v0, 0(sp)
+    ldw v0, 4(sp)
     br detect_collision_end
 
     detect_collision_end:
-    ; Saving sa register
-    ldw s0, 0(sp)
-    ldw s1, 4(sp)
-    ldw s2, 8(sp)
-    ldw s3, 12(sp)
-    ldw s4, 16(sp)
-    ldw s5, 20(sp)
-    ldw s6, 24(sp)
-    ldw s7, 28(sp)
-    addi sp, sp, 32
-
-    ; Restore ra
-    ldw ra, 4(sp)
-    ldw a0, 0(sp)
-    addi sp, sp, 8
+    ; Restore registers
+    ldw ra, 0(sp)
+    ldw a0, 4(sp)
+    ldw s0, 8(sp)
+    ldw s1, 12(sp)
+    ldw s2, 16(sp)
+    ldw s3, 20(sp)
+    ldw s4, 24(sp)
+    ldw s5, 28(sp)
+    ldw s6, 32(sp)
+    ldw s7, 36(sp)
+    addi sp, sp, 40
 
     ret
 ; END:detect_collision

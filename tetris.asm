@@ -63,24 +63,6 @@
 .equ X_LIMIT, 12
 .equ Y_LIMIT, 8
 
-; fake_main:
-;     addi sp, zero, STACK
-;     call reset_game
-
-;     addi t0, zero, 11
-;     stw t0, T_X(zero)
-
-;     addi t0, zero, B
-;     stw t0, T_type(zero)
-    
-;     addi t0, zero, W
-;     stw t0, T_orientation(zero)
-    
-;     addi a0, zero, rotR
-
-;     call act
-;     call wait
-
 ; BEGIN:main
 main:
     ; Init section
@@ -96,8 +78,8 @@ main:
             beq s0, zero, main_event_rate_end
 
                 ; draw the GSA on the leds and display the score
-                ; addi a0, zero, FALLING
-                ; call draw_tetromino
+                ;addi a0, zero, FALLING
+                ;call draw_tetromino
 
                 call draw_gsa
                 call display_score
@@ -176,7 +158,7 @@ main:
 
     ; until newly generated falling tetromino overlaps with something
     beq s2, s4, main_loop
-    br end
+    br main
 
 ; END:main
 
@@ -184,18 +166,18 @@ main:
 clear_leds:
 ; FIXME:
     ; set LED[x] to 0
-    ; stw zero, LEDS+0(zero)
-    ; stw zero, LEDS+4(zero)
-    ; stw zero, LEDS+8(zero)
-    stw zero, LEDS(zero)
+    stw zero, LEDS+0(zero)
+    stw zero, LEDS+4(zero)
+    stw zero, LEDS+8(zero)
+    ; stw zero, LEDS(zero)
     
-    ; store 4 in t0 register       
-    addi t0, zero, 4
-    stw zero, LEDS(t0)
+    ; ; store 4 in t0 register       
+    ; addi t0, zero, 4
+    ; stw zero, LEDS(t0)
     
-    ; store 8 in t0 register       
-    addi t0, zero, 8
-    stw zero, LEDS(t0)
+    ; ; store 8 in t0 register       
+    ; addi t0, zero, 8
+    ; stw zero, LEDS(t0)
     ret
 ; END:clear_leds
 
@@ -212,7 +194,6 @@ set_pixel:
     andi t3, a0, 3 ; get last two significants bits of x
     addi t2, zero, 8; Calculate shift of bytes
     slli t2, t3, 3
-    ;mul t2, t2, t3
 
     rol t0, t0, t2
 
@@ -254,7 +235,6 @@ in_gsa:
     cmplt v1, a1, zero
     or v0, v0, v1
     ret
-
 ; END:in_gsa
 
 ; BEGIN:get_gsa
@@ -284,36 +264,42 @@ set_gsa:
 ; BEGIN:draw_gsa
 draw_gsa:
     
-    addi sp, sp, -4
+    addi sp, sp, -16
     stw ra, 0(sp)
+    stw s5, 4(sp)
+    stw s6, 8(sp)
+    stw s0, 12(sp)
     
     call clear_leds
 
-    addi t5, zero, X_LIMIT
+    addi s0, zero, NOTHING
+    addi s5, zero, X_LIMIT
     draw_gsa_outer_loop:
-    addi t5, t5, -1
+    addi s5, s5, -1
     
-    addi t6, zero, Y_LIMIT
+    addi s6, zero, Y_LIMIT
 
     draw_gsa_inner_loop:
-    addi t6, t6, -1
+    addi s6, s6, -1
     
-    add a0, t5, zero
-    add a1, t6, zero
+    add a0, s5, zero
+    add a1, s6, zero
 
     call get_gsa
 
-    addi t2, zero, NOTHING
-    beq v0, t2, draw_gsa_inner_loop_end
+    beq v0, s0, draw_gsa_inner_loop_end
 
     call set_pixel
 
     draw_gsa_inner_loop_end:
-    bne t6, zero, draw_gsa_inner_loop
-    bne t5, zero, draw_gsa_outer_loop
+    bne s6, zero, draw_gsa_inner_loop
+    bne s5, zero, draw_gsa_outer_loop
     
     ldw ra, 0(sp)
-    addi sp, sp, 4
+    ldw s5, 4(sp)
+    ldw s6, 8(sp)
+    ldw s0, 12(sp)
+    addi sp, sp, 16
 
     ret
 ; END:draw_gsa
@@ -323,7 +309,7 @@ draw_tetromino:
     ;a0: GSA value p
 
     ; Saving ra register
-    addi sp, sp, -28
+    addi sp, sp, -36
     stw ra, 0(sp)
     stw s0, 4(sp)
     stw s1, 8(sp)
@@ -331,26 +317,28 @@ draw_tetromino:
     stw s3, 16(sp)
     stw s4, 20(sp)
     stw s5, 24(sp)
+    stw s6, 28(sp)
+    stw s7, 32(sp)
 
     ; Param for value type in gsa
     add a2, zero, a0
 
     ldw s0, T_X(zero)
     ldw s1, T_Y(zero)
-    ldw s2, T_orientation(zero)
-    ldw s3, T_type(zero)
+    ldw t2, T_orientation(zero)
+    ldw t3, T_type(zero)
 
-    slli t5, s3, 2
-    add t5, t5, s2
+    slli t5, t3, 2
+    add t5, t5, t2
     slli t5, t5, 2
-    ldw t0, DRAW_Ax(t5)
-    ldw t1, DRAW_Ay(t5)
+    ldw s2, DRAW_Ax(t5)
+    ldw s3, DRAW_Ay(t5)
 
     add a0, s0, zero
     add a1, s1, zero
 
-    add t2, zero, zero ; Counter
-    addi t3, zero, 4 ; Max value
+    add s6, zero, zero ; Counter
+    addi s7, zero, 4 ; Max value
     draw_tetromino_loop:
     
     call in_gsa
@@ -361,17 +349,17 @@ draw_tetromino:
     draw_tetromino_loop_zap_set:
 
     ; Increment coordinates
-    ldw s4, 0(t0)
-    ldw s5, 0(t1)
+    ldw s4, 0(s2)
+    ldw s5, 0(s3)
 
     add a0, s0, s4
     add a1, s1, s5
 
-    addi t2, t2, 1
-    addi t0, t0, 4
-    addi t1, t1, 4
+    addi s6, s6, 1
+    addi s2, s2, 4
+    addi s3, s3, 4
 
-    bne t2, t3, draw_tetromino_loop
+    bne s6, s7, draw_tetromino_loop
 
     ; Restore ra
     ldw ra, 0(sp)
@@ -381,7 +369,9 @@ draw_tetromino:
     ldw s3, 16(sp)
     ldw s4, 20(sp)
     ldw s5, 24(sp)
-    addi sp, sp, 28
+    ldw s6, 28(sp)
+    ldw s7, 32(sp)
+    addi sp, sp, 36
 
     ret
 ; END:draw_tetromino
@@ -423,13 +413,15 @@ detect_collision:
     stw a0, 0(sp)
 
     ; Saving sa register
-    addi sp, sp, -24
+    addi sp, sp, -32
     stw s0, 0(sp)
     stw s1, 4(sp)
     stw s2, 8(sp)
     stw s3, 12(sp)
     stw s4, 16(sp)
     stw s5, 20(sp)
+    stw s6, 24(sp)
+    stw s7, 28(sp)
 
     ldw s0, T_X(zero)
     ldw s1, T_Y(zero)
@@ -448,14 +440,14 @@ detect_collision:
     slli t5, s3, 2
     add t5, t5, s2
     slli t5, t5, 2
-    ldw t0, DRAW_Ax(t5)
-    ldw t1, DRAW_Ay(t5)
+    ldw s6, DRAW_Ax(t5)
+    ldw s7, DRAW_Ay(t5)
 
     add a0, s0, zero
     add a1, s1, zero
 
-    add t2, zero, zero ; Counter
-    addi t3, zero, 4 ; Max value
+    add s2, zero, zero ; Counter
+    addi s3, zero, 4 ; Max value
     detect_collision_loop:
     
     ; Detect if is in_gsa
@@ -472,23 +464,24 @@ detect_collision:
 
     ; Detect collision of current tetromino part
     call get_gsa
+    
     addi t4, zero, NOTHING
     bne v0, t4, detect_collision_colide   
     
     detect_collision_zap:
 
     ; Increment coordinates
-    ldw s4, 0(t0)
-    ldw s5, 0(t1)
+    ldw s4, 0(s6)
+    ldw s5, 0(s7)
 
     add a0, s0, s4
     add a1, s1, s5
 
-    addi t2, t2, 1
-    addi t0, t0, 4
-    addi t1, t1, 4
+    addi s2, s2, 1
+    addi s6, s6, 4
+    addi s7, s7, 4
 
-    bne t2, t3, detect_collision_loop
+    bne s2, s3, detect_collision_loop
 
     detect_collision_none:
     addi v0, zero, NONE
@@ -500,7 +493,9 @@ detect_collision:
     ldw s3, 12(sp)
     ldw s4, 16(sp)
     ldw s5, 20(sp)
-    addi sp, sp, 24
+    ldw s6, 24(sp)
+    ldw s7, 28(sp)
+    addi sp, sp, 32
 
     ; Restore ra
     ldw ra, 4(sp)
@@ -517,7 +512,9 @@ detect_collision:
     ldw s3, 12(sp)
     ldw s4, 16(sp)
     ldw s5, 20(sp)
-    addi sp, sp, 24
+    ldw s6, 24(sp)
+    ldw s7, 28(sp)
+    addi sp, sp, 32
 
     ; Restore ra
     ldw ra, 4(sp)
@@ -534,22 +531,19 @@ act:
     ; Params: a0 -> action
     ; Return: v0 -> 0 if succeeded otherwise 1
     ; Saving ra register
-    addi sp, sp, -40
+    addi sp, sp, -28
     stw ra, 0(sp)
     stw s0, 4(sp)
     stw s1, 8(sp)
     stw s2, 12(sp)
-    stw s3, 16(sp)
-    stw s4, 20(sp)
-    stw s5, 24(sp)
     
     ; Save tetromino data on stack in the case of we need to restore it if this function fails
     ldw t1, T_orientation(zero)
-    stw t1, 28(sp)
+    stw t1, 16(sp)
     ldw t1, T_X(zero)
-    stw t1, 32(sp)
+    stw t1, 20(sp)
     ldw t1, T_Y(zero)
-    stw t1, 36(sp)
+    stw t1, 24(sp)
 
     ; Test parameter to know wich collision is tested
     cmpeqi t0, a0, moveL
@@ -573,8 +567,9 @@ act:
     ; Test collision in direction choosen and if success then move tx, ty
     act_moveW:
     addi a0, zero, W_COL
+    add s0, a0, zero
     call detect_collision 
-    beq v0, a0, act_fail      ; if v0 = a0 there is a collision -> v0 will be set to 1
+    beq v0, s0, act_fail      ; if v0 = a0 there is a collision -> v0 will be set to 1
     
     ldw t1, T_X(zero)         ; get the current value of T_X
     addi t1, t1, -1           ; decrement the x cordinate
@@ -584,8 +579,9 @@ act:
 
     act_moveE:
     addi a0, zero, E_COL
+    add s0, a0, zero
     call detect_collision 
-    beq v0, a0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
+    beq v0, s0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
 
     ldw t1, T_X(zero)                       ; get the current value of T_X
     addi t1, t1, 1                          ; increment the x cordinate
@@ -595,8 +591,9 @@ act:
 
     act_moveSo:
     addi a0, zero, So_COL
+    add s0, a0, zero
     call detect_collision 
-    beq v0, a0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
+    beq v0, s0, act_fail                    ; if v0 = a0 there is a collision -> v0 will be set to 1
 
     ldw t1, T_Y(zero)                       ; get the current value of T_Y
     addi t1, t1, 1                          ; increment the y cordinate
@@ -672,11 +669,11 @@ act:
     act_fail:
     addi v0, zero, 1
 
-    ldw t1, 28(sp)
+    ldw t1, 16(sp)
     stw t1, T_orientation(zero)
-    ldw t1, 32(sp)
+    ldw t1, 20(sp)
     stw t1, T_X(zero)
-    ldw t1, 36(sp)
+    ldw t1, 24(sp)
     stw t1, T_Y(zero)
 
     act_end:
@@ -684,10 +681,7 @@ act:
     ldw s0, 4(sp)
     ldw s1, 8(sp)
     ldw s2, 12(sp)
-    ldw s3, 16(sp)
-    ldw s4, 20(sp)
-    ldw s5, 24(sp)
-    addi sp, sp, 40
+    addi sp, sp, 28
     
     ret
 ; END:act

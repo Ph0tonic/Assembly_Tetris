@@ -66,8 +66,27 @@
 ; BEGIN:main
 main:
     ; Init section
-    addi sp, zero, STACK
+    addi sp, zero, 0x2000
     call reset_game
+    
+    addi a0, zero, 1
+    call remove_full_line
+    call draw_gsa
+    
+    call remove_full_line
+    call draw_gsa
+    
+    call remove_full_line
+    call draw_gsa
+    
+    call remove_full_line
+    call draw_gsa
+    
+    call remove_full_line
+    call draw_gsa
+    
+    call remove_full_line
+    call draw_gsa
 
     main_loop:
         main_falling_loop:
@@ -202,7 +221,7 @@ set_pixel:
 ; BEGIN:wait
 wait:
     addi t0, zero, 1
-    slli t0, t0, 20 ; 2^20 for real
+    ;slli t0, t0, 20 ; 2^20 for real ; FIXME: Uncomment!
     ;slli t0, t0, 10 ; 2^10 for simulation
 
     wait_loop:
@@ -768,6 +787,10 @@ reset_game:
     ; Empty GSA
     call reset_gsa
     
+    ; Draw tetrominoe
+    addi a0, zero, FALLING
+    call draw_tetromino
+
     ; Reset the leds accordingly to GSA
     call draw_gsa
 
@@ -794,7 +817,7 @@ detect_full_line:
     stw s2, 12(sp)
     stw s3, 16(sp)
 
-    addi s3, zero, NOTHING
+    addi s3, zero, PLACED
     addi s0, zero, -1
     addi s2, zero, Y_LIMIT
 
@@ -812,7 +835,7 @@ detect_full_line:
     call get_gsa ; TODO: Improve without using get_gsa
 
     ; If empty start detection of a new line
-    beq v0, s3, detect_full_line_y
+    bne v0, s3, detect_full_line_y
 
     ; Iterate over the line if not empty
     bne s1, zero, detect_full_line_x
@@ -900,6 +923,7 @@ remove_full_line:
     ; Move pixel above y line one pixel down
     ; Y index is in s0
     remove_line_loop_y:
+    beq s0, zero, remove_line_end
 
     addi s1, zero, X_LIMIT
     remove_line_loop_x:
@@ -918,8 +942,13 @@ remove_full_line:
     addi s0, s0, -1
     bne s0, zero, remove_line_loop_y
 
+    remove_line_end:
     call increment_score
     call display_score
+
+    add a1, zero, zero
+    addi a2, zero, NOTHING
+    call set_line_value
 
     ; Restore registers
     ldw ra, 0(sp)
@@ -1019,8 +1048,6 @@ display_score:
 ; END:display_score
 
 ; BEGIN:helper
-.equ STACK, 0x2000
-
 set_line_value:
     ; Saving ra register
     ; a1 indice y
@@ -1050,7 +1077,7 @@ reset_gsa:
     stw a1, 8(sp)
     stw a2, 12(sp)
 
-    addi a2, zero, NOTHING
+    addi a2, zero, PLACED ; FIXME: For tests puproses only
 
     add a0, zero, zero
     reset_game_empty_x:

@@ -479,8 +479,7 @@ detect_collision:
     add a0, s0, zero
     add a1, s1, zero
 
-    add s2, zero, zero ; Counter
-    addi s3, zero, 4 ; Max value
+    addi s2, zero, 4 ; Counter
     detect_collision_loop:
     
     ; Detect if is in_gsa
@@ -508,34 +507,21 @@ detect_collision:
     add a0, s0, s4
     add a1, s1, s5
 
-    addi s2, s2, 1
+    addi s2, s2, -1
     addi s6, s6, 4
     addi s7, s7, 4
 
-    bne s2, s3, detect_collision_loop
+    bne s2, zero, detect_collision_loop
 
     detect_collision_none:
     addi v0, zero, NONE
-
-    ; Saving sa register
-    ldw s0, 0(sp)
-    ldw s1, 4(sp)
-    ldw s2, 8(sp)
-    ldw s3, 12(sp)
-    ldw s4, 16(sp)
-    ldw s5, 20(sp)
-    ldw s6, 24(sp)
-    ldw s7, 28(sp)
-    addi sp, sp, 32
-
-    ; Restore ra
-    ldw ra, 4(sp)
-    ldw a0, 0(sp)
-    addi sp, sp, 8
-    ret
+    br detect_collision_end
 
     detect_collision_colide:
+    ldw v0, 0(sp)
+    br detect_collision_end
 
+    detect_collision_end:
     ; Saving sa register
     ldw s0, 0(sp)
     ldw s1, 4(sp)
@@ -551,8 +537,6 @@ detect_collision:
     ldw ra, 4(sp)
     ldw a0, 0(sp)
     addi sp, sp, 8
-
-	add v0, a0, zero
 
     ret
 ; END:detect_collision

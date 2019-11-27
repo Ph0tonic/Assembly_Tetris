@@ -484,13 +484,11 @@ detect_collision:
     detect_collision_loop:
     
     ; Detect if is in_gsa
-    add v0, zero, zero
-    cmpgei v0, a0, X_LIMIT
-    cmpgei v1, a1, Y_LIMIT
-    or v0, v0, v1
-    cmplt v1, a0, zero
-    or v0, v0, v1
-    bne v0, zero, detect_collision_colide
+    addi t0, zero, X_LIMIT
+    addi t1, zero, Y_LIMIT
+    bge a0, t0, detect_collision_colide
+    bge a1, t1, detect_collision_colide
+    blt a0, zero, detect_collision_colide
     
     ; Check if above game area
     blt a1, zero, detect_collision_zap

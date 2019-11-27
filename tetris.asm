@@ -164,20 +164,10 @@ main:
 
 ; BEGIN:clear_leds
 clear_leds:
-; FIXME:
     ; set LED[x] to 0
     stw zero, LEDS+0(zero)
     stw zero, LEDS+4(zero)
     stw zero, LEDS+8(zero)
-    ; stw zero, LEDS(zero)
-    
-    ; ; store 4 in t0 register       
-    ; addi t0, zero, 4
-    ; stw zero, LEDS(t0)
-    
-    ; ; store 8 in t0 register       
-    ; addi t0, zero, 8
-    ; stw zero, LEDS(t0)
     ret
 ; END:clear_leds
 
@@ -688,7 +678,6 @@ act:
 
 ; BEGIN:rotate_tetromino
 rotate_tetromino:
-    ; FIXME: Make this simpler
     ; if a0 = rotL
 
     addi t0, zero, rotL
@@ -1030,7 +1019,6 @@ display_score:
 ; END:display_score
 
 ; BEGIN:helper
-
 .equ STACK, 0x2000
 
 set_line_value:
@@ -1056,14 +1044,11 @@ set_line_value:
 
 reset_gsa:
     ; Saving ra register
-    addi sp, sp, -16
+    addi sp, sp, -24
     stw ra, 0(sp)
     stw a0, 4(sp)
     stw a1, 8(sp)
     stw a2, 12(sp)
-
-    addi t0, zero, X_LIMIT
-    addi t1, zero, Y_LIMIT
 
     addi a2, zero, NOTHING
 
@@ -1072,12 +1057,18 @@ reset_gsa:
     add a1, zero, zero
 
     reset_game_empty_y:
+    stw a0, 16(sp)
+    stw a1, 20(sp)
     call set_gsa
+    ldw a0, 16(sp)
+    ldw a1, 20(sp)
 
     addi a1, a1, 1 
+    addi t1, zero, Y_LIMIT
     blt a1, t1, reset_game_empty_y
 
     addi a0, a0, 1
+    addi t0, zero, X_LIMIT
     blt a0, t0, reset_game_empty_x
 
     ; Restore ra
@@ -1085,7 +1076,7 @@ reset_gsa:
     ldw a0, 4(sp)
     ldw a1, 8(sp)
     ldw a2, 12(sp)
-    addi sp, sp, 16
+    addi sp, sp, 24
 
     ret
 ; END:helper

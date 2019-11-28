@@ -177,7 +177,7 @@ set_pixel:
     addi t0, zero, 1
     rol t0, t0, a1 ; Create a mask for the byte
 
-    ; Calculate a shit of n bytes which will be applied to the mask
+    ; Calculate a shift of n bytes which will be applied to the mask
     andi t3, a0, 3 ; get last two significants bits of x
     addi t2, zero, 8; Calculate shift of bytes
     slli t2, t3, 3
@@ -276,6 +276,9 @@ draw_gsa:
 
     beq v0, s0, draw_gsa_inner_loop_end
 
+    add a0, s5, zero
+    add a1, s6, zero
+    
     call set_pixel
 
     draw_gsa_inner_loop_end:

@@ -132,6 +132,8 @@ main:
             ; remove the bottommost full line
             add a0, v0, zero
             call remove_full_line
+            call increment_score
+            call display_score
         
         br main_detect_full_line
         main_detect_full_line_end:
@@ -278,7 +280,7 @@ draw_gsa:
 
     add a0, s5, zero
     add a1, s6, zero
-    
+
     call set_pixel
 
     draw_gsa_inner_loop_end:
@@ -332,8 +334,10 @@ draw_tetromino:
     draw_tetromino_loop:
     
     call in_gsa
-
     bne v0, zero, draw_tetromino_loop_zap_set
+
+    add a0, s0, zero
+    add a1, s1, zero
     call set_gsa
     
     draw_tetromino_loop_zap_set:
@@ -890,6 +894,8 @@ remove_full_line:
     add a0, s1, zero
     addi a1, s0, -1
     call get_gsa
+
+    add a0, s1, zero
     add a1, s0, zero
     add a2, v0, zero
     call set_gsa
@@ -900,8 +906,6 @@ remove_full_line:
     bne s0, zero, remove_line_loop_y
 
     remove_line_end:
-    call increment_score
-    call display_score
 
     add a1, zero, zero
     addi a2, zero, NOTHING
@@ -1009,20 +1013,34 @@ set_line_value:
     ; Saving ra register
     ; a1 indice y
     ; a2 value
-    addi sp, sp, -4
+    addi sp, sp, -16
     stw ra, 0(sp)
+    stw s0, 4(sp)
+    stw s1, 8(sp)
+    stw s2, 12(sp)
 
     addi a0, zero, X_LIMIT
     
+    add s0, a0, zero
+    add s1, a1, zero
+    add s2, a2, zero
+    
     set_line_value_x:
-    addi a0, a0, -1
+    addi s0, s0, -1
+    add a0, s0, zero
+    add a1, s1, zero
+    add a2, s2, zero
+    
     call set_gsa
 
     ; Iterate over the line
-    bne a0, zero, set_line_value_x
+    bne s0, zero, set_line_value_x
 
     ldw ra, 0(sp)
-    addi sp, sp, 4
+    ldw s0, 4(sp)
+    ldw s1, 8(sp)
+    ldw s2, 12(sp)
+    addi sp, sp, 16
 
     ret
 

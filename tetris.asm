@@ -201,7 +201,7 @@ set_pixel:
 ; BEGIN:wait
 wait:
     addi t0, zero, 1
-    slli t0, t0, 20 ; 2^20 for real ; FIXME: Uncomment!
+    slli t0, t0, 20 ; 2^20 for real ;
     ;slli t0, t0, 10 ; 2^10 for simulation
 
     wait_loop:
@@ -336,8 +336,6 @@ draw_tetromino:
     call in_gsa
     bne v0, zero, draw_tetromino_loop_zap_set
 
-    add a0, s0, zero
-    add a1, s1, zero
     call set_gsa
     
     draw_tetromino_loop_zap_set:
@@ -1338,7 +1336,3 @@ DRAW_Ay:                        ; address of shape arrays, y_axis
   .word L_E_Y
   .word L_So_Y
   .word L_W_Y
-; BEGIN:end
-end:
-
-; END:end
